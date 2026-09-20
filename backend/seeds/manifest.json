@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "exported_at": "2026-09-21T02:45:06+08:00",
+  "libraries": [
+    {
+      "lib": "dangdang",
+      "nodes": 786,
+      "quiz": 333,
+      "params": 0,
+      "qtypes": {
+        "single_choice": 333
+      }
+    },
+    {
+      "lib": "eggli",
+      "nodes": 1087,
+      "quiz": 2572,
+      "params": 813,
+      "qtypes": {
+        "fill_cloze": 3,
+        "single_choice": 2565,
+        "judge": 3,
+        "short": 1
+      }
+    }
+  ],
+  "total_knowledge_nodes": 1873,
+  "total_quiz_questions": 2905,
+  "note": "各库 id 空间独立，不可跨库按 id 关联。"
+}

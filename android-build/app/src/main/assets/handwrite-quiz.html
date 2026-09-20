@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>综合题手写批改演示 — ai学</title>
+<link rel="stylesheet" href="design-tokens.css">
+<style>
+  * { -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+  }
+
+  /* ===== 顶部栏 ===== */
+  .topbar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-title { font-size: var(--fs-h2); font-weight: 600; }
+  .topbar-sub { font-size: var(--fs-caption); color: var(--text-muted); margin-top: 2px; }
+
+  /* ===== 主体：上下布局 ===== */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* 题目区（可滚动） */
+  .question-panel {
+    flex-shrink: 0;
+    max-height: 38vh;
+    overflow-y: auto;
+    padding: 16px 20px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .quiz-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 20px 24px;
+  }
+  .quiz-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .quiz-num { font-size: var(--fs-h2); font-weight: 600; color: var(--primary); }
+  .quiz-meta { display: flex; gap: 8px; }
+  .quiz-question {
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+  .quiz-question strong { color: var(--primary); }
+
+  /* 手写答案区标签 */
+  .answer-label {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    background: var(--bg-card);
+    font-size: var(--fs-secondary);
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .answer-label .hint { color: var(--text-muted); font-weight: 400; }
+
+  /* ===== 手写板 ===== */
+  .canvas-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-card);
+    min-height: 0;
+  }
+  .canvas-toolbar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .tool-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background: var(--bg-sunken);
+    border-radius: var(--radius-sm);
+  }
+  .tool-btn {
+    width: 34px;
+    height: 34px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+    color: var(--text-secondary);
+  }
+  .tool-btn:hover { background: var(--bg-card); }
+  .tool-btn.active { background: var(--primary); color: #fff; }
+  .tool-btn svg { width: 18px; height: 18px; }
+
+  .color-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .color-dot.active { border-color: var(--primary); transform: scale(1.15); }
+  .color-dot.black { background: #1C1B1A; }
+  .color-dot.red { background: #C24238; }
+  .color-dot.blue { background: #3E63DD; }
+
+  .size-slider { width: 90px; accent-color: var(--primary); }
+  .size-label { font-size: var(--fs-caption); color: var(--text-muted); min-width: 28px; }
+
+  .canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background:
+      repeating-linear-gradient(
+        transparent,
+        transparent 31px,
+        #E8E6DF 31px,
+        #E8E6DF 32px
+      );
+    background-color: #FFFEF9;
+  }
+  #drawCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    cursor: crosshair;
+  }
+  .canvas-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: var(--fs-body);
+    pointer-events: none;
+    opacity: .4;
+  }
+
+  /* ===== 底部操作栏 ===== */
+  .bottom-bar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+  }
+  .bottom-bar .btn { flex: 1; height: 46px; font-size: 15px; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  /* ===== 批改结果弹窗（全屏覆盖） ===== */
+  .result-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 500;
+    display: none;
+    flex-direction: column;
+    animation: slideUp .3s ease-out;
+  }
+  .result-overlay.show { display: flex; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  .result-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+  }
+  .result-title { font-size: var(--fs-h2); font-weight: 600; }
+  .result-close {
+    width: 36px; height: 36px;
+    border: none; background: var(--bg-sunken);
+    border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary);
+  }
+
+  .result-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px 32px;
+  }
+
+  /* 得分总览 */
+  .score-overview {
+    background: linear-gradient(135deg, var(--ai) 0%, #A583E8 100%);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    color: #fff;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .score-num {
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .score-num small { font-size: 20px; opacity: .7; font-weight: 400; }
+  .score-info { flex: 1; }
+  .score-info-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .score-info-desc { font-size: 13px; opacity: .85; line-height: 1.5; }
+
+  /* AI 识别的手写答案 */
+  .recognized-box {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+  .recognized-title {
+    font-size: var(--fs-secondary);
+    font-weight: 600;
+    color: var(--ai);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .recognized-text {
+    font-size: var(--fs-body);
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+  /* 得分点 */
+  .points-section { margin-bottom: 16px; }
+  .points-section-title {
+    font-size: var(--fs-body);
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .point-item {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .point-item.got { border-left-color: var(--success); background: var(--success-weak); }
+  .point-item.missed { border-left-color: var(--danger); background: var(--danger-weak); }
+  .point-item.partial { border-left-color: var(--warning); background: var(--warning-weak); }
+  .point-icon {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .point-item.got .point-icon { background: var(--success); color: #fff; }
+  .point-item.missed .point-icon { background: var(--danger); color: #fff; }
+  .point-item.partial .point-icon { background: var(--warning); color: #fff; }
+  .point-content { flex: 1; min-width: 0; }
+  .point-title {
+    font-size: var(--fs-body);
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .point-score {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .point-item.got .point-score { color: var(--success); }
+  .point-item.missed .point-score { color: var(--danger); }
+  .point-desc {
+    font-size: var(--fs-secondary);
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* 错误分析 */
+  .analysis-box {
+    background: var(--danger-weak);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border: 1px solid var(--danger-weak-border);
+  }
+  .analysis-title {
+    font-size: var(--fs-body);
+    font-weight: 600;
+    color: var(--danger);
+    margin-bottom: 8px;
+  }
+  .analysis-text {
+    font-size: var(--fs-secondary);
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* 参考答案 */
+  .reference-box {
+    background: var(--bg-sunken);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .reference-title {
+    font-size: var(--fs-body);
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 8px;
+  }
+  .reference-text {
+    font-size: var(--fs-secondary);
+    line-height: 1.8;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+  }
+
+  /* 判卷中遮罩 */
+  .grading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .grading-overlay.show { display: flex; }
+  .grading-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 32px 40px;
+    text-align: center;
+    box-shadow: var(--shadow-float);
+    max-width: 320px;
+  }
+  .grading-spinner {
+    width: 44px; height: 44px;
+    border: 4px solid var(--bg-sunken);
+    border-top-color: var(--ai);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 14px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .grading-text { font-size: var(--fs-body); color: var(--text-secondary); margin-bottom: 4px; }
+  .grading-sub { font-size: var(--fs-caption); color: var(--text-muted); }
+
+  /* 滚动条 */
+  .question-panel::-webkit-scrollbar,
+  .result-body::-webkit-scrollbar { width: 5px; }
+  .question-panel::-webkit-scrollbar-thumb,
+  .result-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ===== 全屏答题模式 ===== */
+  body.fullscreen-mode .topbar,
+  body.fullscreen-mode .question-panel,
+  body.fullscreen-mode .answer-label,
+  body.fullscreen-mode .bottom-bar {
+    display: none !important;
+  }
+  body.fullscreen-mode .main {
+    padding: 0;
+  }
+  body.fullscreen-mode .canvas-area {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: #FFFEF9;
+  }
+  body.fullscreen-mode .canvas-toolbar {
+    padding: 10px 16px;
+    border-top: none;
+  }
+  body.fullscreen-mode #fullscreenBtn svg {
+    /* 退出全屏图标 */
+  }
+  body.fullscreen-mode .canvas-wrap {
+    background:
+      repeating-linear-gradient(
+        transparent,
+        transparent 35px,
+        #E8E6DF 35px,
+        #E8E6DF 36px
+      );
+      background-color: #FFFEF9;
+  }
+
+  /* 全屏模式下的题目预览浮动按钮 */
+  .question-preview-btn {
+    position: fixed;
+    top: 70px;
+    right: 16px;
+    left: auto;
+    z-index: 120;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    border: 2px solid #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(62,99,221,.4);
+    transition: transform .15s, background .15s;
+    touch-action: none;
+  }
+  .question-preview-btn:hover { background: #3457C7; }
+  .question-preview-btn:active { transform: scale(.92); }
+  .question-preview-btn.dragging { transition: none; opacity: .8; transform: scale(1.05); }
+  .question-preview-btn svg { width: 24px; height: 24px; pointer-events: none; }
+
+  /* 题目预览弹窗 */
+  .question-preview-popup {
+    position: fixed;
+    top: 110px;
+    right: 16px;
+    left: auto;
+    max-width: 420px;
+    width: calc(100vw - 32px);
+    z-index: 110;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-float);
+    padding: 0;
+    display: none;
+    animation: fadeIn .2s ease-out;
+    overflow: hidden;
+  }
+  .question-preview-popup.show { display: block; }
+  .question-preview-popup.dragging { transition: none; user-select: none; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+  .question-preview-popup .popup-title {
+    font-size: var(--fs-secondary);
+    font-weight: 600;
+    color: var(--primary);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: move;
+    background: var(--primary-weak);
+    border-bottom: 1px solid var(--border);
+  }
+  .question-preview-popup .popup-title:active { cursor: grabbing; }
+  .question-preview-popup .popup-close {
+    width: 24px; height: 24px;
+    border: none; background: rgba(255,255,255,.6);
+    border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+  .question-preview-popup .popup-close:hover { background: #fff; color: var(--danger); }
+  .question-preview-popup .popup-text {
+    font-size: var(--fs-body);
+    line-height: 1.7;
+    color: var(--text);
+    padding: 14px;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+  .question-preview-popup .popup-text strong { color: var(--primary); }
+</style>
+</head>
+<body>
+
+<!-- 顶部栏 -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div>
+      <div class="topbar-title">综合题手写批改</div>
+      <div class="topbar-sub">数据结构 · 简答题 · AI视觉识别批改</div>
+    </div>
+  </div>
+  <div class="quiz-meta">
+    <span class="chip chip-primary">综合题</span>
+    <span class="chip chip-ai">AI批改</span>
+  </div>
+</div>
+
+<!-- 主体 -->
+<div class="main">
+  <!-- 题目区 -->
+  <div class="question-panel">
+    <div class="quiz-card">
+      <div class="quiz-head">
+        <div class="quiz-num">第 1 题</div>
+        <div class="quiz-meta">
+          <span class="chip chip-muted">10分</span>
+          <span class="chip chip-muted">⭐⭐⭐</span>
+        </div>
+      </div>
+      <div class="quiz-question">
+        请简述<strong>二叉树层序遍历</strong>的实现原理，并分析其<strong>时间复杂度</strong>和<strong>空间复杂度</strong>。要求说明使用的数据结构、遍历过程，以及复杂度的推导依据。
+      </div>
+    </div>
+  </div>
+
+  <!-- 手写答案区标签 -->
+  <div class="answer-label">
+    <span>✍️ 手写答案区</span>
+    <span class="hint">用手写笔在此处书写答案，支持压感</span>
+  </div>
+
+  <!-- 手写板 -->
+  <div class="canvas-area">
+    <div class="canvas-toolbar">
+      <div class="tool-group">
+        <button class="tool-btn active" id="penBtn" title="画笔">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+        </button>
+        <button class="tool-btn" id="eraserBtn" title="橡皮擦">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16c-.5-.5-.7-1-.7-1.7 0-.7.2-1.2.7-1.7L13 3l7 7-7.5 7.5"/></svg>
+        </button>
+      </div>
+      <div class="tool-group">
+        <div class="color-dot black active" data-color="#1C1B1A"></div>
+        <div class="color-dot red" data-color="#C24238"></div>
+        <div class="color-dot blue" data-color="#3E63DD"></div>
+      </div>
+      <div class="tool-group">
+        <span class="size-label" id="sizeLabel">中</span>
+        <input type="range" class="size-slider" id="sizeSlider" min="1" max="12" value="4">
+      </div>
+      <div class="tool-group" style="margin-left:auto">
+        <button class="tool-btn" id="undoBtn" title="撤销">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6.7 3L3 13"/></svg>
+        </button>
+        <button class="tool-btn" id="clearBtn" title="清空">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        </button>
+        <button class="tool-btn" id="fullscreenBtn" title="全屏答题">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="drawCanvas"></canvas>
+      <div class="canvas-placeholder" id="canvasPlaceholder">
+        在此处手写答案（支持手写笔压感）
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部操作栏 -->
+  <div class="bottom-bar">
+    <button class="btn btn-ghost" id="resetBtn">重新作答</button>
+    <button class="btn btn-ai" id="submitBtn">提交批改</button>
+  </div>
+</div>
+
+<!-- 批改结果 -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-header">
+    <div class="result-title">批改结果</div>
+    <button class="result-close" id="closeResult">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="result-body">
+    <!-- 得分总览 -->
+    <div class="score-overview">
+      <div class="score-num">6<small>/10</small></div>
+      <div class="score-info">
+        <div class="score-info-title">得分 60%</div>
+        <div class="score-info-desc">4 个得分点，答对 2 个，部分答对 1 个，遗漏 1 个</div>
+      </div>
+    </div>
+
+    <!-- AI 识别的手写答案 -->
+    <div class="recognized-box">
+      <div class="recognized-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        AI 识别的手写答案
+      </div>
+      <div class="recognized-text">层序遍历使用队列实现。从根节点开始，先将根节点入队，然后每次出队一个节点并访问，同时将其左右子节点入队。时间复杂度是 O(n)，因为每个节点访问一次。空间复杂度是 O(1)，因为只需要常数额外空间。</div>
+    </div>
+
+    <!-- 得分点 -->
+    <div class="points-section">
+      <div class="points-section-title">📋 得分点明细</div>
+
+      <div class="point-item got">
+        <div class="point-icon">✓</div>
+        <div class="point-content">
+          <div class="point-title">数据结构：使用队列</div>
+          <div class="point-score">+3 分 / 共 3 分</div>
+          <div class="point-desc">正确指出层序遍历使用队列（FIFO）实现，这是层序遍历的核心数据结构。</div>
+        </div>
+      </div>
+
+      <div class="point-item got">
+        <div class="point-icon">✓</div>
+        <div class="point-content">
+          <div class="point-title">遍历过程：入队出队</div>
+          <div class="point-score">+3 分 / 共 3 分</div>
+          <div class="point-desc">正确描述了根节点入队、出队访问、子节点入队的循环过程。</div>
+        </div>
+      </div>
+
+      <div class="point-item partial">
+        <div class="point-icon">~</div>
+        <div class="point-content">
+          <div class="point-title">时间复杂度分析</div>
+          <div class="point-score">+0 分 / 共 2 分（结论正确但推导不完整）</div>
+          <div class="point-desc">结论 O(n) 正确，但未说明推导依据：每个节点恰好入队和出队各一次，因此总操作数为 2n，时间复杂度为 O(n)。</div>
+        </div>
+      </div>
+
+      <div class="point-item missed">
+        <div class="point-icon">✗</div>
+        <div class="point-content">
+          <div class="point-title">空间复杂度分析</div>
+          <div class="point-score">+0 分 / 共 2 分</div>
+          <div class="point-desc">错误。空间复杂度应为 O(n)，而非 O(1)。队列中最多存储一层的节点数，完美二叉树最后一层有 n/2 个节点，因此空间复杂度为 O(n)。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 错误分析 -->
+    <div class="analysis-box">
+      <div class="analysis-title">⚠️ 错误分析</div>
+      <div class="analysis-text">
+        本题的主要错误在于<strong>空间复杂度的理解</strong>。你认为空间复杂度是 O(1)，但实际上层序遍历需要使用队列存储待访问的节点。在最坏情况下（完美二叉树），队列中会同时存储最后一层的所有节点，数量约为 n/2，因此空间复杂度为 O(n)。
+
+        另外，时间复杂度虽然结论正确，但缺少推导过程。建议在回答复杂度问题时，不仅给出结论，还要说明"为什么"——例如"每个节点入队出队各一次，共 2n 次操作"。
+
+        O(1) 空间复杂度只适用于不需要额外存储空间的算法（如原地排序、Morris 遍历），而层序遍历必须依赖队列，因此不可能达到 O(1)。
+      </div>
+    </div>
+
+    <!-- 参考答案 -->
+    <div class="reference-box">
+      <div class="reference-title">📖 参考答案</div>
+      <div class="reference-text">二叉树的层序遍历（广度优先搜索）使用队列实现。
+
+实现过程：
+1. 初始化一个空队列，将根节点入队
+2. 当队列不为空时，重复以下操作：
+   - 出队队首节点并访问
+   - 若该节点有左子节点，将左子节点入队
+   - 若该节点有右子节点，将右子节点入队
+
+时间复杂度：O(n)。每个节点恰好入队和出队各一次，总操作数为 2n，因此时间复杂度为 O(n)。
+
+空间复杂度：O(n)。队列中最多存储一层的节点数。对于包含 n 个节点的完美二叉树，最后一层有 ⌈n/2⌉ 个节点，因此队列最大长度为 O(n)。</div>
+    </div>
+  </div>
+</div>
+
+<!-- 题目预览浮动按钮（全屏模式显示） -->
+<button class="question-preview-btn" id="questionPreviewBtn" title="查看题目">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+</button>
+
+<!-- 题目预览弹窗 -->
+<div class="question-preview-popup" id="questionPreviewPopup">
+  <div class="popup-title">
+    <span>📋 题目</span>
+    <button class="popup-close" id="popupClose">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="popup-text">
+    请简述<strong>二叉树层序遍历</strong>的实现原理，并分析其<strong>时间复杂度</strong>和<strong>空间复杂度</strong>。要求说明使用的数据结构、遍历过程，以及复杂度的推导依据。
+  </div>
+</div>
+
+<!-- 判卷中遮罩 -->
+<div class="grading-overlay" id="gradingOverlay">
+  <div class="grading-card">
+    <div class="grading-spinner"></div>
+    <div class="grading-text">AI 视觉模型正在识别手写答案</div>
+    <div class="grading-sub">识别文字 → 对比得分点 → 生成批改报告</div>
+  </div>
+</div>
+
+<script>
+// ===== 手写板核心 =====
+const canvas = document.getElementById('drawCanvas');
+const ctx = canvas.getContext('2d');
+const placeholder = document.getElementById('canvasPlaceholder');
+
+let isDrawing = false;
+let currentColor = '#1C1B1A';
+let currentSize = 4;
+let isEraser = false;
+let lastX = 0, lastY = 0;
+let history = [];
+
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = wrap.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.height + 'px';
+  ctx.scale(dpr, dpr);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  redrawAll();
+}
+
+function redrawAll() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  history.forEach(stroke => {
+    ctx.beginPath();
+    ctx.strokeStyle = stroke.color;
+    ctx.lineWidth = stroke.size;
+    ctx.globalCompositeOperation = stroke.eraser ? 'destination-out' : 'source-over';
+    stroke.points.forEach((p, i) => {
+      if (i === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    });
+    ctx.stroke();
+  });
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top, pressure: e.pressure || 0.5 };
+}
+
+function startDraw(e) {
+  e.preventDefault();
+  isDrawing = true;
+  placeholder.style.display = 'none';
+  const pos = getPos(e);
+  lastX = pos.x; lastY = pos.y;
+  history.push({ color: currentColor, size: isEraser ? currentSize * 3 : currentSize, eraser: isEraser, points: [{ x: pos.x, y: pos.y }] });
+}
+
+function draw(e) {
+  if (!isDrawing) return;
+  e.preventDefault();
+  const pos = getPos(e);
+  const stroke = history[history.length - 1];
+  stroke.points.push({ x: pos.x, y: pos.y });
+  ctx.beginPath();
+  ctx.strokeStyle = currentColor;
+  const pressureSize = isEraser ? currentSize * 3 : currentSize * (0.5 + pos.pressure);
+  ctx.lineWidth = pressureSize;
+  ctx.globalCompositeOperation = isEraser ? 'destination-out' : 'source-over';
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(pos.x, pos.y);
+  ctx.stroke();
+  lastX = pos.x; lastY = pos.y;
+}
+
+function endDraw() {
+  if (!isDrawing) return;
+  isDrawing = false;
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+canvas.addEventListener('pointerdown', startDraw);
+canvas.addEventListener('pointermove', draw);
+canvas.addEventListener('pointerup', endDraw);
+canvas.addEventListener('pointerleave', endDraw);
+canvas.addEventListener('pointercancel', endDraw);
+
+// ===== 工具栏 =====
+document.getElementById('penBtn').addEventListener('click', () => {
+  isEraser = false;
+  document.getElementById('penBtn').classList.add('active');
+  document.getElementById('eraserBtn').classList.remove('active');
+});
+document.getElementById('eraserBtn').addEventListener('click', () => {
+  isEraser = true;
+  document.getElementById('eraserBtn').classList.add('active');
+  document.getElementById('penBtn').classList.remove('active');
+});
+document.querySelectorAll('.color-dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+    dot.classList.add('active');
+    currentColor = dot.dataset.color;
+    isEraser = false;
+    document.getElementById('penBtn').classList.add('active');
+    document.getElementById('eraserBtn').classList.remove('active');
+  });
+});
+const sizeSlider = document.getElementById('sizeSlider');
+const sizeLabel = document.getElementById('sizeLabel');
+sizeSlider.addEventListener('input', () => {
+  currentSize = parseInt(sizeSlider.value);
+  sizeLabel.textContent = currentSize <= 3 ? '细' : currentSize <= 7 ? '中' : '粗';
+});
+document.getElementById('undoBtn').addEventListener('click', () => {
+  if (history.length > 0) {
+    history.pop();
+    redrawAll();
+    if (history.length === 0) placeholder.style.display = 'flex';
+  }
+});
+document.getElementById('clearBtn').addEventListener('click', () => {
+  history = [];
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  placeholder.style.display = 'flex';
+});
+document.getElementById('resetBtn').addEventListener('click', () => {
+  history = [];
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  placeholder.style.display = 'flex';
+  document.getElementById('resultOverlay').classList.remove('show');
+});
+
+// ===== 提交批改（Mock） =====
+document.getElementById('submitBtn').addEventListener('click', () => {
+  if (history.length === 0) { alert('请先手写答案'); return; }
+  document.getElementById('gradingOverlay').classList.add('show');
+  setTimeout(() => {
+    document.getElementById('gradingOverlay').classList.remove('show');
+    document.getElementById('resultOverlay').classList.add('show');
+  }, 2200);
+});
+document.getElementById('closeResult').addEventListener('click', () => {
+  document.getElementById('resultOverlay').classList.remove('show');
+});
+
+// ===== 全屏答题模式 =====
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const questionPreviewBtn = document.getElementById('questionPreviewBtn');
+const questionPreviewPopup = document.getElementById('questionPreviewPopup');
+const popupClose = document.getElementById('popupClose');
+
+fullscreenBtn.addEventListener('click', () => {
+  document.body.classList.toggle('fullscreen-mode');
+  const isFull = document.body.classList.contains('fullscreen-mode');
+  fullscreenBtn.title = isFull ? '退出全屏' : '全屏答题';
+  // 全屏时切换图标为退出全屏
+  fullscreenBtn.innerHTML = isFull
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>';
+  // 延迟 resize，等布局完成
+  setTimeout(resizeCanvas, 50);
+  // 关闭题目预览弹窗
+  questionPreviewPopup.classList.remove('show');
+});
+
+// 题目预览浮动按钮（可拖动固定位置，轻点切换弹窗）
+let btnDragging = false;
+let btnMoved = false;
+let btnStartX = 0, btnStartY = 0;
+let btnOrigLeft = 0, btnOrigTop = 0;
+const BTN_DRAG_THRESHOLD = 5;
+
+questionPreviewBtn.addEventListener('pointerdown', (e) => {
+  btnDragging = true;
+  btnMoved = false;
+  btnStartX = e.clientX;
+  btnStartY = e.clientY;
+  const rect = questionPreviewBtn.getBoundingClientRect();
+  btnOrigLeft = rect.left;
+  btnOrigTop = rect.top;
+  // 切换为 left/top 定位
+  questionPreviewBtn.style.left = btnOrigLeft + 'px';
+  questionPreviewBtn.style.right = 'auto';
+  questionPreviewBtn.style.top = btnOrigTop + 'px';
+  e.preventDefault();
+  e.stopPropagation();
+});
+
+document.addEventListener('pointermove', (e) => {
+  if (!btnDragging) return;
+  const dx = e.clientX - btnStartX;
+  const dy = e.clientY - btnStartY;
+  if (!btnMoved && (Math.abs(dx) > BTN_DRAG_THRESHOLD || Math.abs(dy) > BTN_DRAG_THRESHOLD)) {
+    btnMoved = true;
+    questionPreviewBtn.classList.add('dragging');
+  }
+  if (btnMoved) {
+    let newLeft = btnOrigLeft + dx;
+    let newTop = btnOrigTop + dy;
+    const btnW = questionPreviewBtn.offsetWidth;
+    const btnH = questionPreviewBtn.offsetHeight;
+    newLeft = Math.max(4, Math.min(newLeft, window.innerWidth - btnW - 4));
+    newTop = Math.max(4, Math.min(newTop, window.innerHeight - btnH - 4));
+    questionPreviewBtn.style.left = newLeft + 'px';
+    questionPreviewBtn.style.top = newTop + 'px';
+    e.preventDefault();
+  }
+});
+
+document.addEventListener('pointerup', (e) => {
+  if (!btnDragging) return;
+  btnDragging = false;
+  questionPreviewBtn.classList.remove('dragging');
+  if (!btnMoved) {
+    // 轻点：切换题目预览弹窗
+    const popup = questionPreviewPopup;
+    if (popup.classList.contains('show')) {
+      popup.classList.remove('show');
+    } else {
+      if (!popup.dataset.dragged) {
+        popup.style.left = 'auto';
+        popup.style.right = '16px';
+        popup.style.top = '130px';
+      }
+      popup.classList.add('show');
+    }
+  }
+});
+
+document.addEventListener('pointercancel', () => {
+  btnDragging = false;
+  btnMoved = false;
+  questionPreviewBtn.classList.remove('dragging');
+});
+
+popupClose.addEventListener('click', () => {
+  questionPreviewPopup.classList.remove('show');
+});
+
+// 拖拽题目预览弹窗
+const popupTitle = questionPreviewPopup.querySelector('.popup-title');
+popupTitle.addEventListener('pointerdown', (e) => {
+  // 不拦截关闭按钮
+  if (e.target.closest('.popup-close')) return;
+  isDraggingPopup = true;
+  const rect = questionPreviewPopup.getBoundingClientRect();
+  dragOffsetX = e.clientX - rect.left;
+  dragOffsetY = e.clientY - rect.top;
+  questionPreviewPopup.classList.add('dragging');
+  // 切换为 left/top 定位（从 right 定位转为 left 定位）
+  questionPreviewPopup.style.left = rect.left + 'px';
+  questionPreviewPopup.style.right = 'auto';
+  questionPreviewPopup.setPointerCapture(e.pointerId);
+  e.preventDefault();
+});
+
+popupTitle.addEventListener('pointermove', (e) => {
+  if (!isDraggingPopup) return;
+  let newLeft = e.clientX - dragOffsetX;
+  let newTop = e.clientY - dragOffsetY;
+  // 限制在视口范围内（至少保留标题栏可见）
+  const maxLeft = window.innerWidth - 60;
+  const maxTop = window.innerHeight - 40;
+  newLeft = Math.max(-questionPreviewPopup.offsetWidth + 80, Math.min(newLeft, maxLeft));
+  newTop = Math.max(0, Math.min(newTop, maxTop));
+  questionPreviewPopup.style.left = newLeft + 'px';
+  questionPreviewPopup.style.top = newTop + 'px';
+});
+
+popupTitle.addEventListener('pointerup', (e) => {
+  if (!isDraggingPopup) return;
+  isDraggingPopup = false;
+  questionPreviewPopup.classList.remove('dragging');
+  questionPreviewPopup.dataset.dragged = 'true';
+  try { questionPreviewPopup.releasePointerCapture(e.pointerId); } catch(_) {}
+});
+
+popupTitle.addEventListener('pointercancel', () => {
+  isDraggingPopup = false;
+  questionPreviewPopup.classList.remove('dragging');
+});
+
+// 全屏切换时重置弹窗位置（按钮保持用户拖动的位置）
+fullscreenBtn.addEventListener('click', () => {
+  setTimeout(() => {
+    if (!document.body.classList.contains('fullscreen-mode')) {
+      // 退出全屏时隐藏题目弹窗
+      questionPreviewPopup.classList.remove('show');
+      questionPreviewPopup.dataset.dragged = '';
+      questionPreviewPopup.style.left = '';
+      questionPreviewPopup.style.right = '';
+      questionPreviewPopup.style.top = '';
+    }
+  }, 60);
+});
+
+// ESC 键退出全屏
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.body.classList.contains('fullscreen-mode')) {
+    fullscreenBtn.click();
+  }
+});
+
+// ===== 初始化 =====
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+</script>
+</body>
+</html>

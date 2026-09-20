@@ -1,0 +1,2 @@
+﻿node_id,name,level,definition,core_elements,key_terms,formulas,common_mistakes,scope_boundary,prerequisites_desc
+344,总线特性,4,总线的物理特性指机械特性，功能特性定义每条线的功能，电气特性规定信号方向和电平，时间特性规定时序关系。,电气特性 | 机械特性 | 功能特性 | 时间特性,机械特性 | 功能特性 | 电气特性 | 时间特性,[],混淆各特性的具体内容;忽略时间特性对同步的重要性,不涉及具体总线的电气规范,需了解总线特性及性能指标的概念

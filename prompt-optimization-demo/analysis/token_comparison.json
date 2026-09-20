@@ -1,0 +1,74 @@
+{
+  "total_before_tokens": 1006.6,
+  "total_after_tokens": 448.5,
+  "total_savings_tokens": 558.1,
+  "total_savings_pct": 55.4,
+  "comparisons": [
+    {
+      "id": "classroom_system",
+      "name": "课堂系统提示词",
+      "scenario": "每次课堂交互必发，高频",
+      "optimization": "结构化分区（角色/规则/上下文），压缩冗长要求描述",
+      "before": {
+        "total_chars": 444,
+        "chinese_chars": 358,
+        "english_words": 1,
+        "other_chars": 84,
+        "estimated_tokens": 491.6
+      },
+      "after": {
+        "total_chars": 174,
+        "chinese_chars": 120,
+        "english_words": 1,
+        "other_chars": 52,
+        "estimated_tokens": 172.6
+      },
+      "savings_tokens": 319.0,
+      "savings_pct": 64.9
+    },
+    {
+      "id": "quiz_single_choice",
+      "name": "出题-单项选择",
+      "scenario": "每题一次，中等频率",
+      "optimization": "引入 system prompt（字段定义表），user 只传参数；JSON 完整示例改为字段定义",
+      "before": {
+        "total_chars": 360,
+        "chinese_chars": 80,
+        "english_words": 29,
+        "other_chars": 118,
+        "estimated_tokens": 168.4
+      },
+      "after": {
+        "total_chars": 247,
+        "chinese_chars": 43,
+        "english_words": 19,
+        "other_chars": 82,
+        "estimated_tokens": 99.5
+      },
+      "savings_tokens": 68.9,
+      "savings_pct": 40.9
+    },
+    {
+      "id": "quiz_fill_cloze",
+      "name": "出题-填空（挖空）",
+      "scenario": "每题一次，高消耗场景",
+      "optimization": "引入 system prompt，7条要求合并为规则段，JSON 示例改为字段定义",
+      "before": {
+        "total_chars": 592,
+        "chinese_chars": 188,
+        "english_words": 41,
+        "other_chars": 204,
+        "estimated_tokens": 346.6
+      },
+      "after": {
+        "total_chars": 358,
+        "chinese_chars": 89,
+        "english_words": 28,
+        "other_chars": 109,
+        "estimated_tokens": 176.4
+      },
+      "savings_tokens": 170.2,
+      "savings_pct": 49.1
+    }
+  ]
+}

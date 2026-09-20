@@ -1,0 +1,6 @@
+[只有 user prompt，无 system]
+
+为知识点「队列」生成一道单项选择题。
+返回严格 JSON（不要任何其他文字、不要代码块），必须包含 schema_version 和 type 字段。
+JSON 格式：{"schema_version":"2.0","type":"single_choice","question":"题干","options":["A","B","C","D"],"correct_answer":1,"explanation":"解析（讲清为什么，80字内）","analysis":"易错点提示（可选）","points":1,"difficulty":3}
+要求：options 给 4 个；correct_answer 为正确选项的索引（0-based 整数）；题干清晰。

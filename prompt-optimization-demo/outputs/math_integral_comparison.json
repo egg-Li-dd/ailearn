@@ -1,0 +1,39 @@
+{
+  "scenario_id": "math_integral",
+  "label": "高数-填空（不定积分）",
+  "category": "高数",
+  "before": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "你是一个专业的出题引擎，负责根据知识点生成高质量的练习题。\n\n请严格按照以下 JSON 格式输出，不要输出任何其他文字或代码块标记：\n\n{\n  \"schema_version\": \"2.0\",\n  \"type\": \"fill_cloze\",\n  \"question\": \"题目内容，用{{1}}{{2}}标记挖空位置\",\n  \"blanks\": [\n    {\"id\": 1, \"answer\": \"答案1\", \"hint\": \"提示1\"},\n    {\"id\": 2, \"answer\": \"答案2\", \"hint\": \"提示2\"}\n  ],\n  \"correct_answer\": [\"答案1\", \"答案2\"],\n  \"explanation\": \"详细解析\",\n  \"points\": 2,\n  \"difficulty\": 3\n}\n\n字段说明：\n- question: 题干，用{{数字}}标记挖空位置\n- blanks: 填空数组，每个包含id(对应占位符)、answer(标准答案)、hint(提示)\n- correct_answer: 答案数组，顺序与blanks一致\n- explanation: 详细的解题过程\n- points: 分值\n- difficulty: 难度1-5\n\n挖空规则：\n- AI自行决定挖空位置，2-3个空\n- 每个空对应一个核心知识点\n- 题干中不能出现答案\n\n现在请根据以下参数生成题目：\n知识点：不定积分的计算\n题型：fill_cloze\n难度：3"
+      }
+    ],
+    "output": "{\n  \"schema_version\": \"2.0\",\n  \"type\": \"fill_cloze\",\n  \"question\": \"计算不定积分 \\\\int x \\\\cos x \\\\, dx = x \\\\sin x + {{1}} + C，该结果是通过{{2}}法得到的。\",\n  \"blanks\": [\n    {\n      \"id\": 1,\n      \"answer\": \"cos x\",\n      \"hint\": \"注意分部积分后还需计算一个简单积分，结果含三角函数\"\n    },\n    {\n      \"id\": 2,\n      \"answer\": \"分部积分\",\n      \"hint\": \"适用于两类不同函数乘积的积分\"\n    }\n  ],\n  \"correct_answer\": [\"cos x\", \"分部积分\"],\n  \"explanation\": \"令 u = x，dv = cos x dx，则 du = dx，v = sin x。由分部积分公式 ∫u dv = uv - ∫v du，得 ∫x cos x dx = x sin x - ∫sin x dx = x sin x + cos x + C。因此空1应填 cos x，所用方法为分部积分法。\",\n  \"points\": 2,\n  \"difficulty\": 3\n}",
+    "usage": {
+      "prompt_tokens": 384,
+      "completion_tokens": 1227,
+      "total_tokens": 1611,
+      "prompt_tokens_details": {}
+    }
+  },
+  "after": {
+    "messages": [
+      {
+        "role": "system",
+        "content": "你是出题引擎。输出严格JSON，不要其他文字或代码块。输出紧凑JSON（单行，无缩进无换行）。\n\n字段定义：\n- question: string 题干，用 {{1}}{{2}} 标记挖空位\n- blanks: object[] 每个含 id(int)对应占位符, answer(string)标准答案, hint(string|null)提示\n- correct_answer: string[] 答案数组，顺序与blanks一致\n- explanation: string 解析(≤80字)\n- difficulty: int 难度(1-5)\n\n挖空规则：AI决定位置，2-3空，每空对应核心知识点，题干不出现答案。"
+      },
+      {
+        "role": "user",
+        "content": "{\"knowledge\":\"不定积分的计算\",\"type\":\"fill_cloze\",\"difficulty\":3}"
+      }
+    ],
+    "output": "{\"question\":\"计算不定积分 ∫ (2x+3)^2 dx = {{1}}x^3 + {{2}}x^2 + {{3}}x + C。\",\"blanks\":[{\"id\":1,\"answer\":\"4/3\",\"hint\":\"x^3的系数\"},{\"id\":2,\"answer\":\"6\",\"hint\":\"x^2的系数\"},{\"id\":3,\"answer\":\"9\",\"hint\":\"x的系数\"}],\"correct_answer\":[\"4/3\",\"6\",\"9\"],\"explanation\":\"展开(2x+3)^2=4x^2+12x+9，逐项积分得(4/3)x^3+6x^2+9x+C。\",\"difficulty\":3}",
+    "usage": {
+      "prompt_tokens": 244,
+      "completion_tokens": 5715,
+      "total_tokens": 5959,
+      "prompt_tokens_details": {}
+    }
+  }
+}

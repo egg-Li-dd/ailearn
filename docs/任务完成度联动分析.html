@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任务完成度联动分析与优化方案</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    padding: 24px;
+    line-height: 1.6;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 24px; margin-bottom: 8px; color: #1a1a2e; }
+  .subtitle { color: #666; margin-bottom: 24px; font-size: 14px; }
+
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .section h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e8ecf1;
+    color: #1a1a2e;
+  }
+  .section h3 {
+    font-size: 15px;
+    margin: 16px 0 10px 0;
+    color: #2d3a8c;
+  }
+
+  /* 流程图 */
+  .flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 16px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .flow-node {
+    background: #f0f4ff;
+    border: 2px solid #6b8afd;
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+    min-width: 110px;
+    max-width: 140px;
+  }
+  .flow-node .title { font-weight: 600; font-size: 13px; color: #2d3a8c; margin-bottom: 4px; }
+  .flow-node .desc { font-size: 11px; color: #666; }
+  .flow-node.problem { background: #fff0f0; border-color: #e74c3c; }
+  .flow-node.problem .title { color: #c0392b; }
+  .flow-node.ok { background: #f0fff4; border-color: #27ae60; }
+  .flow-node.ok .title { color: #1e8449; }
+  .flow-node.warn { background: #fffaf0; border-color: #f39c12; }
+  .flow-node.warn .title { color: #e67e22; }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    font-size: 18px;
+    color: #999;
+    flex-shrink: 0;
+  }
+
+  /* 场景模拟 */
+  .scenario {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 16px;
+    margin: 12px 0;
+    border-left: 4px solid #6b8afd;
+  }
+  .scenario.bad { border-left-color: #e74c3c; }
+  .scenario.good { border-left-color: #27ae60; }
+  .scenario .sc-title { font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+  .scenario .sc-steps { font-size: 13px; color: #555; }
+  .scenario .sc-steps ol { padding-left: 20px; }
+  .scenario .sc-steps li { margin-bottom: 4px; }
+  .scenario .sc-result {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #fff;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .scenario.bad .sc-result { color: #c0392b; background: #fef5f5; }
+  .scenario.good .sc-result { color: #1e8449; background: #f0fff4; }
+
+  /* 问题列表 */
+  .issue-list { list-style: none; }
+  .issue-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .issue-item:last-child { border-bottom: none; }
+  .issue-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0;
+    color: #fff;
+  }
+  .issue-num.p0 { background: #e74c3c; }
+  .issue-num.p1 { background: #f39c12; }
+  .issue-num.p2 { background: #3498db; }
+  .issue-content .issue-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .issue-content .issue-desc { font-size: 13px; color: #666; }
+
+  /* 优化方案 */
+  .opt-card {
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-left: 4px solid;
+  }
+  .opt-card.high { background: #fef5f5; border-color: #e74c3c; }
+  .opt-card.mid { background: #fffaf0; border-color: #f39c12; }
+  .opt-card.low { background: #f0f9ff; border-color: #3498db; }
+  .opt-card .opt-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  .opt-card .opt-desc { font-size: 13px; color: #555; margin-bottom: 8px; }
+  .opt-card .opt-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .opt-card .opt-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.06);
+    color: #666;
+  }
+
+  /* 公式 */
+  .formula {
+    background: #1a1a2e;
+    color: #e8e8e8;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-family: "Consolas", "Monaco", monospace;
+    font-size: 13px;
+    margin: 10px 0;
+    overflow-x: auto;
+  }
+  .formula .comment { color: #6a9955; }
+  .formula .keyword { color: #569cd6; }
+  .formula .number { color: #b5cea8; }
+
+  /* 对比表 */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 13px;
+  }
+  .compare-table th, .compare-table td {
+    border: 1px solid #e0e0e0;
+    padding: 10px 12px;
+    text-align: left;
+  }
+  .compare-table th {
+    background: #f5f7fa;
+    font-weight: 600;
+  }
+  .compare-table td.old { background: #fef5f5; }
+  .compare-table td.new { background: #f0fff4; }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-weight: normal;
+  }
+  .tag.p0 { background: #ffebee; color: #c62828; }
+  .tag.p1 { background: #fff3e0; color: #e65100; }
+  .tag.p2 { background: #e3f2fd; color: #1565c0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>任务完成度联动分析与优化方案</h1>
+  <p class="subtitle">基于当前代码实现的深度诊断、场景模拟与优化路径</p>
+
+  <!-- 一、当前联动链路 -->
+  <div class="section">
+    <h2>一、当前任务完成度联动链路</h2>
+    <div class="flow">
+      <div class="flow-node">
+        <div class="title">① 任务布置</div>
+        <div class="desc">绑定 target_knowledge_id<br>pass_score=80</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="title">② 自动生成检测题</div>
+        <div class="desc">3-5题/知识点<br>quiz_session</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="title">③ 用户答题</div>
+        <div class="desc">写入 QuizAnswer<br>score 0-100</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node ok">
+        <div class="title">④ 判卷联动</div>
+        <div class="desc">更新掌握度<br>更新任务状态<br>错题入复习队列</div>
+      </div>
+    </div>
+
+    <h3>④ 判卷时的三个并行动作</h3>
+    <div class="flow">
+      <div class="flow-node ok">
+        <div class="title">掌握度更新</div>
+        <div class="desc">apply_quiz_result<br>仅首次作答生效</div>
+      </div>
+      <div class="flow-arrow">+</div>
+      <div class="flow-node warn">
+        <div class="title">任务状态更新</div>
+        <div class="desc">score≥80 → DONE<br>score<80 → 保持TODO</div>
+      </div>
+      <div class="flow-arrow">+</div>
+      <div class="flow-node problem">
+        <div class="title">错题/复习</div>
+        <div class="desc">score<60 → 入复习队列<br>score<60 → 错题本收录</div>
+      </div>
+    </div>
+
+    <div class="formula">
+<span class="comment">// 任务完成判定（task_quiz.py 第110-128行）</span>
+<span class="keyword">def</span> submit_task_quiz_result(task, score, passed):
+    task.actual_score = score
+    task.passed = passed
+    task.attempts += <span class="number">1</span>
+    <span class="keyword">if</span> passed:  <span class="comment">// score >= pass_score(80)</span>
+        task.status = DONE      <span class="comment">// 直接完成</span>
+    <span class="keyword">else</span>:
+        <span class="keyword">pass</span>  <span class="comment">// 保持TODO，无其他动作</span>
+    </div>
+  </div>
+
+  <!-- 二、场景模拟：当前系统的问题 -->
+  <div class="section">
+    <h2>二、场景模拟：当前系统的5个典型问题</h2>
+
+    <div class="scenario bad">
+      <div class="sc-title">场景1：阈值断层 — 60-79分的"灰色地带"</div>
+      <div class="sc-steps">
+        <ol>
+          <li>用户做任务检测题，3道题对了2道，得分67分</li>
+          <li>任务判定：67 < 80 → 未通过，保持TODO</li>
+          <li>错题本判定：67 ≥ 60 → 不收录错题</li>
+          <li>复习队列判定：67 ≥ 60 → 不加入复习</li>
+        </ol>
+      </div>
+      <div class="sc-result">
+        ❌ 结果：任务卡住了，但用户看不到错题，也没有复习推送，不知道错在哪、怎么改进。任务永远停在TODO。
+      </div>
+    </div>
+
+    <div class="scenario bad">
+      <div class="sc-title">场景2：掌握度已达标，但任务仍未完成</div>
+      <div class="sc-steps">
+        <ol>
+          <li>用户在课堂答题中多次答对某知识点，掌握度从30涨到85</li>
+          <li>但该知识点关联的任务检测题只考过一次，得分65（未通过）</li>
+          <li>用户通过其他方式已经掌握了知识点，但任务还是TODO</li>
+        </ol>
+      </div>
+      <div class="sc-result">
+        ❌ 结果：任务完成只看检测题分数，不看知识点实际掌握度。用户需要重新做一遍已经掌握的检测题才能完成任务，体验割裂。
+      </div>
+    </div>
+
+    <div class="scenario bad">
+      <div class="sc-title">场景3：错题重练通过，任务不联动</div>
+      <div class="sc-steps">
+        <ol>
+          <li>任务检测题得分55，未通过，错题进入错题本</li>
+          <li>用户在错题本中重练这道题，答对了（得分100）</li>
+          <li>知识点掌握度提升了，但任务状态还是TODO</li>
+        </ol>
+      </div>
+      <div class="sc-result">
+        ❌ 结果：错题本和任务是两套独立系统。用户已经在错题本证明了掌握，但任务不会自动完成，需要回去重新做检测题。
+      </div>
+    </div>
+
+    <div class="scenario bad">
+      <div class="sc-title">场景4：多次尝试无进步追踪</div>
+      <div class="sc-steps">
+        <ol>
+          <li>第一次检测：45分（未通过）</li>
+          <li>复习后第二次：62分（未通过，但进步了17分）</li>
+          <li>再复习后第三次：78分（未通过，但接近通过）</li>
+          <li>任务只记录最后一次78分，看不到进步趋势</li>
+        </ol>
+      </div>
+      <div class="sc-result">
+        ❌ 结果：attempts=3，但没有分数趋势记录。用户看不到自己的进步，容易挫败。任务完成度是二元的（0或1），没有"已经完成80%"的中间状态。
+      </div>
+    </div>
+
+    <div class="scenario bad">
+      <div class="sc-title">场景5：逾期任务无补救</div>
+      <div class="sc-steps">
+        <ol>
+          <li>任务截止时间到了，用户没做检测题</li>
+          <li>系统标记 is_overdue=True</li>
+          <li>没有自动安排复习，没有重新生成检测题</li>
+          <li>逾期任务一直挂在列表里，用户不知道怎么补救</li>
+        </ol>
+      </div>
+      <div class="sc-result">
+        ❌ 结果：逾期只是一个标记，没有后续动作。逾期任务堆积，学习计划混乱。
+      </div>
+    </div>
+  </div>
+
+  <!-- 三、核心问题总结 -->
+  <div class="section">
+    <h2>三、核心问题总结</h2>
+    <ul class="issue-list">
+      <li class="issue-item">
+        <div class="issue-num p0">1</div>
+        <div class="issue-content">
+          <div class="issue-title">任务完成度是二元的，缺少中间进度 <span class="tag p0">P0</span></div>
+          <div class="issue-desc">任务要么DONE要么TODO，没有"完成度百分比"。检测题3道对2道（67分），用户已经掌握了2/3，但任务显示0%完成。</div>
+        </div>
+      </li>
+      <li class="issue-item">
+        <div class="issue-num p0">2</div>
+        <div class="issue-content">
+          <div class="issue-title">任务完成只看检测题，不看知识点掌握度 <span class="tag p0">P0</span></div>
+          <div class="issue-desc">知识点掌握度已经85（已掌握），但检测题没考好，任务还是未完成。两个衡量标准脱节。</div>
+        </div>
+      </li>
+      <li class="issue-item">
+        <div class="issue-num p1">3</div>
+        <div class="issue-content">
+          <div class="issue-title">错题重练不回写任务状态 <span class="tag p1">P1</span></div>
+          <div class="issue-desc">用户在错题本重练答对后，任务不会自动完成。已证明掌握，但任务仍卡住。</div>
+        </div>
+      </li>
+      <li class="issue-item">
+        <div class="issue-num p1">4</div>
+        <div class="issue-content">
+          <div class="issue-title">多次尝试无趋势追踪 <span class="tag p1">P1</span></div>
+          <div class="issue-desc">只记录最后一次actual_score，没有历史分数趋势。用户看不到进步，完成度无法体现"接近通过"的状态。</div>
+        </div>
+      </li>
+      <li class="issue-item">
+        <div class="issue-num p2">5</div>
+        <div class="issue-content">
+          <div class="issue-title">逾期任务无自动补救 <span class="tag p2">P2</span></div>
+          <div class="issue-desc">逾期只是标记，没有自动安排复习或重新生成检测题。逾期任务堆积无下文。</div>
+        </div>
+      </li>
+      <li class="issue-item">
+        <div class="issue-num p2">6</div>
+        <div class="issue-content">
+          <div class="issue-title">完成度统计维度单一 <span class="tag p2">P2</span></div>
+          <div class="issue-desc">stats只统计DONE数量，不考虑任务难度、知识点掌握度、答题趋势。无法回答"我整体掌握了多少"。</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 四、优化方案 -->
+  <div class="section">
+    <h2>四、优化方案（按实施优先级）</h2>
+
+    <div class="opt-card high">
+      <div class="opt-title">方案1：引入任务完成度百分比（0-100%）<span class="tag p0">P0</span></div>
+      <div class="opt-desc">
+        任务不再是二元的DONE/TODO，而是有一个动态完成度。完成度由三个维度加权计算：
+        <br>• 知识点掌握度（40%）：target_knowledge_id 的 mastery 值
+        <br>• 检测题最高分（40%）：历次检测中的最高分
+        <br>• 答题参与度（20%）：是否做过检测题、尝试次数
+      </div>
+      <div class="formula">
+<span class="comment">// 任务完成度计算公式</span>
+completion = mastery * <span class="number">0.4</span> + best_score * <span class="number">0.4</span> + participation * <span class="number">0.2</span>
+
+<span class="comment">// 其中 participation：</span>
+<span class="keyword">if</span> attempts == <span class="number">0</span>: participation = <span class="number">0</span>
+<span class="keyword">elif</span> attempts == <span class="number">1</span>: participation = <span class="number">50</span>
+<span class="keyword">else</span>: participation = min(<span class="number">100</span>, <span class="number">50</span> + attempts * <span class="number">15</span>)
+
+<span class="comment">// 任务完成判定：completion >= 80 且 best_score >= 60</span>
+<span class="keyword">if</span> completion >= <span class="number">80</span> and best_score >= <span class="number">60</span>:
+    status = DONE
+      </div>
+      <div class="opt-meta">
+        <span class="opt-tag">改动量：中</span>
+        <span class="opt-tag">影响：核心体验</span>
+        <span class="opt-tag">涉及：Task模型+task_quiz.py+前端展示</span>
+      </div>
+    </div>
+
+    <div class="opt-card high">
+      <div class="opt-title">方案2：知识点掌握度达标自动完成任务 <span class="tag p0">P0</span></div>
+      <div class="optimize-desc">
+        当 target_knowledge_id 的 mastery >= 80 时，即使检测题没通过，也自动标记任务为"掌握度达标"状态。
+        <br>用户可以选择"用掌握度完成任务"，跳过重复检测。
+      </div>
+      <div class="opt-desc">
+        触发时机：
+        <br>• 每次 apply_mastery_update 后，检查关联任务
+        <br>• 掌握度从<80涨到≥80时，自动推送"任务可通过掌握度完成"
+        <br>• 用户确认后，任务标记DONE，actual_score=mastery
+      </div>
+      <div class="opt-meta">
+        <span class="opt-tag">改动量：中</span>
+        <span class="opt-tag">影响：学习效率</span>
+        <span class="opt-tag">涉及：mastery.py+task_quiz.py+WS推送</span>
+      </div>
+    </div>
+
+    <div class="opt-card mid">
+      <div class="opt-title">方案3：错题重练通过自动完成关联任务 <span class="tag p1">P1</span></div>
+      <div class="opt-desc">
+        错题本重练时，如果题目关联的任务检测题全部答对（或平均分≥80），自动将对应任务标记为DONE。
+        <br>形成"答错→收录→重练→掌握→任务完成"的完整闭环。
+      </div>
+      <div class="opt-meta">
+        <span class="opt-tag">改动量：小</span>
+        <span class="opt-tag">影响：闭环体验</span>
+        <span class="opt-tag">涉及：wrong_book.py+task_quiz.py</span>
+      </div>
+    </div>
+
+    <div class="opt-card mid">
+      <div class="opt-title">方案4：记录检测题分数趋势 <span class="tag p1">P1</span></div>
+      <div class="opt-desc">
+        新增 TaskAttempt 表（或在Task中加score_history JSON字段），记录每次检测的分数和时间。
+        <br>任务详情页展示分数趋势折线图，让用户看到进步。
+        <br>完成度计算使用"最近3次平均分"而非单次分数，更稳定。
+      </div>
+      <div class="opt-meta">
+        <span class="opt-tag">改动量：中</span>
+        <span class="opt-tag">影响：激励反馈</span>
+        <span class="opt-tag">涉及：Task模型+前端图表</span>
+      </div>
+    </div>
+
+    <div class="opt-card low">
+      <div class="opt-title">方案5：逾期任务自动补救 <span class="tag p2">P2</span></div>
+      <div class="opt-desc">
+        任务逾期时自动执行：
+        <br>• 将关联知识点加入"优先复习"列表
+        <br>• 重新生成一套检测题（降低难度或减少题量）
+        <br>• 推送WS通知："任务已逾期，已为你安排复习和重新检测"
+      </div>
+      <div class="opt-meta">
+        <span class="opt-tag">改动量：中</span>
+        <span class="opt-tag">影响：计划闭环</span>
+        <span class="opt-tag">涉及：task_auto_progress.py+WS推送</span>
+      </div>
+    </div>
+
+    <div class="opt-card low">
+      <div class="opt-title">方案6：多维度完成度统计 <span class="tag p2">P2</span></div>
+      <div class="opt-desc">
+        数据看板新增：
+        <br>• 按科目的任务完成率（DONE/总数）
+        <br>• 平均完成度趋势（最近7天）
+        <br>• 知识点掌握度与任务完成度的相关性
+        <br>• 逾期任务占比和补救率
+      </div>
+      <div class="opt-meta">
+        <span class="opt-tag">改动量：小</span>
+        <span class="opt-tag">影响：数据洞察</span>
+        <span class="opt-tag">涉及：stats.py+管理台看板</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 五、新旧对比 -->
+  <div class="section">
+    <h2>五、新旧机制对比</h2>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>维度</th>
+          <th>当前机制</th>
+          <th>优化后</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>任务完成度</td>
+          <td class="old">二元（0或1）</td>
+          <td class="new">百分比（0-100%），三维度加权</td>
+        </tr>
+        <tr>
+          <td>完成依据</td>
+          <td class="old">仅检测题分数≥80</td>
+          <td class="new">掌握度+检测分+参与度综合判定</td>
+        </tr>
+        <tr>
+          <td>掌握度达标</td>
+          <td class="old">不影响任务状态</td>
+          <td class="new">掌握度≥80可自动完成任务</td>
+        </tr>
+        <tr>
+          <td>错题重练</td>
+          <td class="old">独立系统，不回写任务</td>
+          <td class="new">重练通过自动完成关联任务</td>
+        </tr>
+        <tr>
+          <td>多次尝试</td>
+          <td class="old">只记录最后一次分数</td>
+          <td class="new">记录趋势，用最近3次平均分</td>
+        </tr>
+        <tr>
+          <td>逾期处理</td>
+          <td class="old">仅标记，无后续</td>
+          <td class="new">自动安排复习+重新检测</td>
+        </tr>
+        <tr>
+          <td>60-79分题目</td>
+          <td class="old">任务未通过+不进错题本</td>
+          <td class="new">计入完成度+推荐针对性复习</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 六、实施路径 -->
+  <div class="section">
+    <h2>六、建议实施路径</h2>
+    <div class="flow">
+      <div class="flow-node warn">
+        <div class="title">第一阶段</div>
+        <div class="desc">方案1+方案2<br>完成度百分比<br>掌握度联动</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node ok">
+        <div class="title">第二阶段</div>
+        <div class="desc">方案3+方案4<br>错题闭环<br>趋势追踪</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="title">第三阶段</div>
+        <div class="desc">方案5+方案6<br>逾期补救<br>多维统计</div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:#888;margin-top:12px;">
+      第一阶段解决核心体验问题（完成度二元、掌握度脱节），预计改动量中等；第二阶段完善闭环；第三阶段优化边缘场景和数据洞察。
+    </p>
+  </div>
+</div>
+</body>
+</html>

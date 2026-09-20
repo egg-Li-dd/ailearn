@@ -1,0 +1,827 @@
+/* ============================================================
+   ai学 设计令牌 v2.0 — 美化升级
+   在 v1.0（晨光/专注/纸感/克制）基础上增强：
+   · 渐变系统 · 玻璃拟态 · 微动效 · 图标体系 · 插画规范
+   · 深色模式完善 · 新组件（启动页/空状态/成就/骨架屏）
+   向后兼容 v1.0 所有变量，可直接替换引用
+   ============================================================ */
+
+@import url('design-tokens.css'); /* 继承 v1.0 基础变量 */
+
+:root {
+  /* ==========================================================
+     一、渐变系统（v2.0 新增）
+     ========================================================== */
+  --grad-primary: linear-gradient(135deg, #3E63DD 0%, #5B7EE8 50%, #8A5CD6 100%);
+  --grad-primary-soft: linear-gradient(135deg, rgba(62,99,221,.08) 0%, rgba(138,92,214,.08) 100%);
+  --grad-ai: linear-gradient(135deg, #8A5CD6 0%, #A78BFA 100%);
+  --grad-ai-soft: linear-gradient(135deg, rgba(138,92,214,.06) 0%, rgba(167,139,250,.06) 100%);
+  --grad-success: linear-gradient(135deg, #3E8E58 0%, #5CB87A 100%);
+  --grad-warning: linear-gradient(135deg, #C77E1E 0%, #E8A94C 100%);
+  --grad-danger: linear-gradient(135deg, #C24238 0%, #E06B60 100%);
+  --grad-paper: linear-gradient(180deg, #F6F6F2 0%, #EFEDE6 100%);
+  --grad-card: linear-gradient(180deg, #FFFFFF 0%, #FAFAF7 100%);
+
+  /* 文字渐变 */
+  --grad-text-primary: linear-gradient(135deg, #3E63DD 0%, #8A5CD6 100%);
+  --grad-text-ai: linear-gradient(135deg, #8A5CD6 0%, #A78BFA 100%);
+
+  /* ==========================================================
+     二、阴影层次增强（v2.0 新增三级阴影）
+     ========================================================== */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.04);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.06);
+  --shadow-xl: 0 16px 48px rgba(0,0,0,.12), 0 8px 16px rgba(0,0,0,.08);
+  --shadow-glow-primary: 0 0 20px rgba(62,99,221,.30);
+  --shadow-glow-ai: 0 0 20px rgba(138,92,214,.30);
+  --shadow-inner: inset 0 2px 4px rgba(0,0,0,.06);
+
+  /* ==========================================================
+     三、玻璃拟态（v2.0 新增）
+     ========================================================== */
+  --glass-bg: rgba(255,255,255,.72);
+  --glass-bg-strong: rgba(255,255,255,.85);
+  --glass-border: rgba(255,255,255,.50);
+  --glass-blur: blur(20px) saturate(180%);
+  --glass-blur-strong: blur(30px) saturate(200%);
+
+  /* ==========================================================
+     四、圆角体系扩展（v2.0 新增）
+     ========================================================== */
+  --radius-xs: 6px;
+  --radius-xl: 28px;
+  --radius-2xl: 36px;
+  --radius-pill: 999px;
+
+  /* ==========================================================
+     五、动效曲线与时长（v2.0 标准化）
+     ========================================================== */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 400ms;
+
+  /* ==========================================================
+     六、z-index 层级规范（v2.0 新增）
+     ========================================================== */
+  --z-base: 1;
+  --z-sticky: 10;
+  --z-dropdown: 100;
+  --z-sticky-bar: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+
+  /* ==========================================================
+     七、图标尺寸规范（v2.0 新增）
+     ========================================================== */
+  --icon-xs: 14px;
+  --icon-sm: 16px;
+  --icon-md: 20px;
+  --icon-lg: 24px;
+  --icon-xl: 32px;
+  --icon-2xl: 48px;
+  --icon-stroke: 2px;
+
+  /* ==========================================================
+     八、插画尺寸规范（v2.0 新增）
+     ========================================================== */
+  --illust-sm: 120px;
+  --illust-md: 180px;
+  --illust-lg: 240px;
+  --illust-xl: 320px;
+}
+
+/* ============================================================
+   深色模式 v2.0 增强
+   ========================================================== */
+[data-theme="dark"] {
+  --grad-paper: linear-gradient(180deg, #14151A 0%, #181920 100%);
+  --grad-card: linear-gradient(180deg, #1D1F26 0%, #1A1C22 100%);
+  --glass-bg: rgba(29,31,38,.72);
+  --glass-bg-strong: rgba(29,31,38,.85);
+  --glass-border: rgba(255,255,255,.08);
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.3);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.5), 0 2px 4px rgba(0,0,0,.3);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.6), 0 4px 8px rgba(0,0,0,.4);
+  --shadow-xl: 0 16px 48px rgba(0,0,0,.7), 0 8px 16px rgba(0,0,0,.5);
+  --shadow-glow-primary: 0 0 24px rgba(110,143,240,.40);
+  --shadow-glow-ai: 0 0 24px rgba(165,131,232,.40);
+  --shadow-inner: inset 0 2px 4px rgba(0,0,0,.3);
+}
+
+/* ============================================================
+   一、按钮 v2.0 美化升级
+   ========================================================== */
+.btn {
+  position: relative;
+  overflow: hidden;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.12) 0%, transparent 50%);
+  pointer-events: none;
+}
+.btn-primary {
+  background: var(--grad-primary);
+  box-shadow: var(--shadow-sm), 0 1px 0 rgba(255,255,255,.2) inset;
+}
+.btn-primary:hover { box-shadow: var(--shadow-md), var(--shadow-glow-primary); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0) scale(.98); box-shadow: var(--shadow-xs); }
+
+.btn-ai {
+  background: var(--grad-ai);
+  box-shadow: var(--shadow-sm), 0 1px 0 rgba(255,255,255,.2) inset;
+}
+.btn-ai:hover { box-shadow: var(--shadow-md), var(--shadow-glow-ai); transform: translateY(-1px); }
+
+.btn-secondary {
+  background: var(--grad-card);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+.btn-secondary:hover { border-color: var(--primary); background: var(--primary-weak); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  height: 40px;
+  padding: 0 16px;
+}
+.btn-ghost:hover { background: var(--bg-sunken); color: var(--text); }
+
+/* 按钮涟漪效果 */
+.btn-ripple { position: relative; overflow: hidden; }
+.btn-ripple .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,.4);
+  transform: scale(0);
+  animation: ripple-anim .6s var(--ease-out);
+  pointer-events: none;
+}
+@keyframes ripple-anim { to { transform: scale(4); opacity: 0; } }
+
+/* ============================================================
+   二、卡片 v2.0 美化升级
+   ========================================================== */
+.card {
+  background: var(--grad-card);
+  border: 1px solid var(--border);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(62,99,221,.2);
+}
+
+/* 玻璃卡片 */
+.card-glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+}
+
+/* 渐变边框卡片 */
+.card-gradient-border {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+}
+.card-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: var(--grad-primary);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ============================================================
+   三、底部 Tab 栏 v2.0 美化升级
+   ========================================================== */
+.tabbar {
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur-strong);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
+  border-top: 1px solid var(--glass-border);
+  box-shadow: 0 -4px 20px rgba(0,0,0,.06);
+}
+.tabbar-item {
+  position: relative;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+.tabbar-item svg {
+  transition: transform var(--duration-normal) var(--ease-spring);
+}
+.tabbar-item.active svg {
+  transform: translateY(-2px) scale(1.08);
+}
+.tabbar-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 3px;
+  background: var(--grad-primary);
+  border-radius: 0 0 3px 3px;
+}
+
+/* ============================================================
+   四、输入框 v2.0 美化升级
+   ========================================================== */
+.input {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  transition: all var(--duration-normal) var(--ease-out);
+  box-shadow: var(--shadow-xs);
+}
+.input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(62,99,221,.12), var(--shadow-xs);
+  background: var(--bg-card);
+}
+.input::placeholder { transition: opacity var(--duration-fast); }
+.input:focus::placeholder { opacity: .5; }
+
+/* 搜索框 */
+.input-search {
+  padding-left: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23908D85' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 14px center;
+}
+
+/* ============================================================
+   五、标签 Chip v2.0 美化升级
+   ========================================================== */
+.chip {
+  transition: all var(--duration-fast) var(--ease-out);
+  border: 1px solid transparent;
+}
+.chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.chip-active {
+  background: var(--grad-primary) !important;
+  color: #fff !important;
+  box-shadow: var(--shadow-sm);
+}
+
+/* 科目 chip 带图标 */
+.chip-subject {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-secondary);
+  font-weight: 500;
+  border: 1px solid;
+}
+.chip-subject .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ============================================================
+   六、聊天气泡 v2.0 美化升级
+   ========================================================== */
+.chat-bubble {
+  transition: all var(--duration-normal) var(--ease-out);
+  animation: bubble-in .3s var(--ease-out);
+}
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(8px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.chat-bubble.user {
+  background: var(--grad-primary);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.chat-bubble.ai {
+  background: var(--grad-card);
+  box-shadow: var(--shadow-sm);
+}
+
+/* AI 气泡头部渐变条 */
+.chat-ai-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.chat-ai-avatar {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--grad-ai);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 12px; font-weight: 600;
+}
+
+/* ============================================================
+   七、任务卡片 v2.0 美化升级
+   ========================================================== */
+.task-card {
+  background: var(--grad-card);
+  border: 1px solid var(--border);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+.task-card:hover {
+  transform: translateX(2px);
+  box-shadow: var(--shadow-md);
+}
+.task-card.status-doing {
+  background: var(--grad-card);
+  border: 1.5px solid var(--primary);
+  box-shadow: 0 0 0 4px rgba(62,99,221,.08), var(--shadow-sm);
+}
+.task-card.status-done {
+  background: var(--bg-sunken);
+  border-color: transparent;
+}
+
+/* 任务类型图标容器 */
+.task-icon {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.task-icon.read { background: var(--primary-weak); color: var(--primary); }
+.task-icon.practice { background: var(--ai-weak); color: var(--ai); }
+.task-icon.memory { background: var(--warning-weak); color: var(--warning); }
+.task-icon.think { background: var(--success-weak); color: var(--success); }
+.task-icon.review { background: var(--danger-weak); color: var(--danger); }
+
+/* ============================================================
+   八、知识树 v2.0 美化升级
+   ========================================================== */
+.ktree-node {
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.ktree-node:hover {
+  background: var(--primary-weak);
+}
+.ktree-node.active {
+  background: var(--primary-weak);
+  font-weight: 600;
+}
+.ktree-dot {
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+.ktree-node:hover .ktree-dot { transform: scale(1.3); }
+
+/* 掌握度进度条 */
+.mastery-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-sunken);
+  overflow: hidden;
+}
+.mastery-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+/* ============================================================
+   九、页面头部 v2.0 美化升级
+   ========================================================== */
+.page-header {
+  position: relative;
+  background: var(--grad-card);
+  border-bottom: 1px solid var(--border);
+}
+.page-header-gradient {
+  background: var(--grad-primary-soft);
+  border-bottom: none;
+}
+.page-title-gradient {
+  background: var(--grad-text-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================================
+   十、浮动按钮 FAB v2.0 美化升级
+   ========================================================== */
+.fab {
+  background: var(--grad-ai);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-ai);
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+.fab:hover { transform: scale(1.08); box-shadow: var(--shadow-xl), var(--shadow-glow-ai); }
+.fab:active { transform: scale(.95); }
+
+/* ============================================================
+   十一、课中全屏模式 v2.0 美化升级
+   ========================================================== */
+.fullscreen-header {
+  background: var(--grad-primary);
+  position: relative;
+  overflow: hidden;
+}
+.fullscreen-header::before {
+  content: '';
+  position: absolute;
+  top: -50%; right: -20%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(255,255,255,.15) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.fullscreen-header::after {
+  content: '';
+  position: absolute;
+  bottom: -30%; left: -10%;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(138,92,214,.3) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+/* ============================================================
+   十二、进度环 v2.0 美化升级
+   ========================================================== */
+.progress-ring .ring-fg {
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+/* ============================================================
+   十三、分段控件 v2.0 美化升级
+   ========================================================== */
+.segmented {
+  background: var(--bg-sunken);
+  padding: 4px;
+  gap: 2px;
+}
+.segmented-item {
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+.segmented-item.active {
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+  color: var(--primary);
+}
+
+/* ============================================================
+   十四、空状态 v2.0 新增组件
+   ========================================================== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl) var(--space-md);
+  text-align: center;
+}
+.empty-state-illust {
+  width: var(--illust-md);
+  height: var(--illust-md);
+  margin-bottom: var(--space-md);
+  opacity: .9;
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.empty-state-title {
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: var(--space-xs);
+}
+.empty-state-desc {
+  font-size: var(--fs-secondary);
+  color: var(--text-muted);
+  max-width: 240px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   十五、骨架屏 v2.0 新增组件
+   ========================================================== */
+.skeleton {
+  background: var(--bg-sunken);
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.4) 50%, transparent 100%);
+  animation: skeleton-shimmer 1.5s infinite;
+}
+[data-theme="dark"] .skeleton::after {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.06) 50%, transparent 100%);
+}
+@keyframes skeleton-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ============================================================
+   十六、启动页 / 品牌区 v2.0 新增组件
+   ========================================================== */
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--grad-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  animation: splash-fade 2.5s var(--ease-out) forwards;
+}
+@keyframes splash-fade {
+  0%, 70% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+.splash-logo {
+  width: 96px; height: 96px;
+  border-radius: 24px;
+  background: rgba(255,255,255,.15);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+  animation: logo-pulse 2s ease-in-out infinite;
+}
+@keyframes logo-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,.3); }
+  50% { transform: scale(1.05); box-shadow: 0 0 0 16px rgba(255,255,255,0); }
+}
+.splash-brand {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+}
+.splash-tagline {
+  font-size: 14px;
+  color: rgba(255,255,255,.7);
+  margin-top: 8px;
+}
+
+/* ============================================================
+   十七、成就/庆祝弹层 v2.0 新增组件
+   ========================================================== */
+.celebrate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  animation: fadeIn var(--duration-normal) var(--ease-out);
+}
+.celebrate-card {
+  width: 300px;
+  background: var(--grad-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+  box-shadow: var(--shadow-xl);
+  animation: celebrate-pop .5s var(--ease-spring);
+}
+@keyframes celebrate-pop {
+  0% { transform: scale(.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.celebrate-icon {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--grad-success);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+  color: #fff;
+  box-shadow: var(--shadow-glow-primary);
+}
+
+/* ============================================================
+   十八、Toast 提示 v2.0 新增组件
+   ========================================================== */
+.toast {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 12px 20px;
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-secondary);
+  font-weight: 500;
+  animation: toast-in .3s var(--ease-spring);
+}
+@keyframes toast-in {
+  from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+.toast-success { color: var(--success); }
+.toast-error { color: var(--danger); }
+.toast-info { color: var(--primary); }
+
+/* ============================================================
+   十九、底部弹层 v2.0 新增组件
+   ========================================================== */
+.bottom-sheet {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--grad-card);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  box-shadow: var(--shadow-xl);
+  z-index: var(--z-modal);
+  animation: sheet-up .3s var(--ease-out);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.bottom-sheet-handle {
+  width: 40px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 12px auto 0;
+}
+
+/* ============================================================
+   二十、雷达图/图表容器 v2.0 美化
+   ========================================================== */
+.chart-card {
+  background: var(--grad-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+}
+.chart-title {
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ============================================================
+   二十一、热力图 v2.0 美化升级
+   ========================================================== */
+.heatmap-cell {
+  transition: all var(--duration-fast) var(--ease-out);
+  cursor: pointer;
+}
+.heatmap-cell:hover {
+  transform: scale(1.3);
+  box-shadow: var(--shadow-sm);
+  z-index: 1;
+}
+
+/* ============================================================
+   二十二、头像 v2.0 新增组件
+   ========================================================== */
+.avatar {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+}
+.avatar-sm { width: 32px; height: 32px; font-size: 13px; }
+.avatar-md { width: 44px; height: 44px; font-size: 16px; }
+.avatar-lg { width: 64px; height: 64px; font-size: 22px; }
+.avatar-xl { width: 88px; height: 88px; font-size: 28px; }
+.avatar-gradient { background: var(--grad-primary); }
+.avatar-ai { background: var(--grad-ai); }
+.avatar-ring {
+  box-shadow: 0 0 0 3px var(--bg-card), 0 0 0 5px var(--primary);
+}
+
+/* ============================================================
+   二十三、徽章/角标 v2.0 新增组件
+   ========================================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+.badge-danger { background: var(--danger); color: #fff; }
+.badge-primary { background: var(--primary); color: #fff; }
+.badge-ai { background: var(--ai); color: #fff; }
+.badge-dot {
+  width: 8px; height: 8px;
+  min-width: 8px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* ============================================================
+   二十四、列表项 v2.0 新增组件
+   ========================================================== */
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  transition: background var(--duration-fast);
+  cursor: pointer;
+}
+.list-item:last-child { border-bottom: none; }
+.list-item:hover { background: var(--bg-sunken); }
+.list-item:active { background: var(--primary-weak); }
+.list-item-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+.list-item-content { flex: 1; min-width: 0; }
+.list-item-title {
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--text);
+}
+.list-item-subtitle {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.list-item-arrow {
+  color: var(--text-muted);
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   二十五、滚动条美化 v2.0
+   ========================================================== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ============================================================
+   二十六、选中文本美化
+   ========================================================== */
+::selection {
+  background: rgba(62,99,221,.2);
+  color: var(--text);
+}
+
+/* ============================================================
+   二十七、减少动效偏好（无障碍）
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

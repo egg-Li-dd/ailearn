@@ -1,0 +1,244 @@
+/* ai学 管理台 全局样式（UI-SPEC 视觉体系） */
+:root {
+  --bg: #F6F6F2;
+  --bg-card: #FFFFFF;
+  --bg-sunken: #EEEDE8;
+  --text: #1C1B1A;
+  --text-secondary: #5C5A55;
+  --text-muted: #908D85;
+  --border: #E3E1DA;
+  --primary: #3E63DD;
+  --primary-weak: #E9EEFB;
+  --ai: #8A5CD6;
+  --ai-weak: #F1EBF9;
+  --danger: #C24238;
+  --warning: #C77E1E;
+  --success: #3E8E58;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --font-sans: "PingFang SC", "HarmonyOS Sans SC", "MiSans", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --shadow-card: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.06);
+  --shadow-modal: 0 8px 32px rgba(0,0,0,.2);
+  --transition-fast: .12s ease;
+  --transition-normal: .2s ease;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+
+/* ---------- 按钮体系 ---------- */
+.btn {
+  height: 34px; padding: 0 16px;
+  border: none; border-radius: var(--radius-sm);
+  background: var(--primary); color: #fff;
+  font-size: 13px; font-weight: 500;
+  transition: opacity .15s, transform .1s, background .15s, box-shadow .15s;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn:hover { opacity: .88; }
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.btn.ghost { background: var(--bg-card); color: var(--primary); border: 1px solid var(--border); }
+.btn.ghost:hover { background: var(--primary-weak); opacity: 1; }
+.btn.danger { background: var(--danger); }
+.btn.ai { background: var(--ai); }
+.btn.mini { height: 26px; padding: 0 10px; font-size: 12px; border-radius: 6px; }
+.btn.loading { position: relative; color: transparent; pointer-events: none; }
+.btn.loading::after {
+  content: ''; position: absolute;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin .6s linear infinite;
+}
+
+/* ---------- 表单 ---------- */
+input, select, textarea {
+  height: 34px; padding: 0 12px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-card); color: var(--text);
+  font-size: 13px; outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(62,99,221,.12);
+}
+input::placeholder { color: var(--text-muted); }
+input:disabled, select:disabled { background: var(--bg-sunken); cursor: not-allowed; color: var(--text-muted); }
+textarea { height: auto; padding: 10px 12px; resize: vertical; line-height: 1.6; }
+label.f { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--text-secondary); }
+input[type="checkbox"], input[type="radio"] {
+  width: auto; height: auto; padding: 0; margin: 0;
+  accent-color: var(--primary); cursor: pointer;
+}
+
+/* ---------- 卡片 ---------- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 18px 20px;
+}
+
+/* ---------- 表格 ---------- */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  text-align: left; font-weight: 500; color: var(--text-secondary);
+  padding: 8px 10px; border-bottom: 1px solid var(--border);
+  background: var(--bg-sunken); font-size: 12px;
+  user-select: none;
+}
+thead th:first-child { border-radius: 6px 0 0 6px; }
+thead th:last-child { border-radius: 0 6px 6px 0; }
+tbody td { padding: 9px 10px; border-bottom: 1px solid rgba(0,0,0,.05); vertical-align: middle; }
+tbody tr { transition: background .12s; }
+tbody tr:hover { background: rgba(62,99,221,.04); }
+tbody tr:last-child td { border-bottom: none; }
+.row-selected { background: var(--primary-weak) !important; }
+.mono { font-family: var(--font-mono); font-size: 12.5px; }
+
+/* ---------- 标签 ---------- */
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 10px; border-radius: 6px;
+  font-size: 12px; font-weight: 500; white-space: nowrap;
+}
+.tag.blue { background: var(--primary-weak); color: var(--primary); }
+.tag.red { background: #FDECEA; color: var(--danger); }
+.tag.green { background: #E8F5EC; color: var(--success); }
+.tag.warn { background: #FFF3DC; color: var(--warning); }
+.tag.gray { background: var(--bg-sunken); color: var(--text-secondary); }
+.tag.ai { background: var(--ai-weak); color: var(--ai); }
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: #fff;
+  padding: 9px 20px; border-radius: 10px; font-size: 13px;
+  z-index: 1000; box-shadow: 0 4px 16px rgba(0,0,0,.18);
+  animation: toastIn .2s ease-out;
+  max-width: 80vw; word-break: break-word;
+}
+.toast.error { background: var(--danger); }
+.toast.success { background: var(--success); }
+@keyframes toastIn { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* ---------- 页面骨架 ---------- */
+.page-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.page-head h2 { font-size: 20px; font-weight: 600; }
+.page-head .sub { font-size: 12px; color: var(--text-muted); }
+.toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+
+/* ---------- 空状态 ---------- */
+.empty {
+  text-align: center; color: var(--text-muted);
+  padding: 36px 0; font-size: 13px;
+}
+.empty-icon { font-size: 32px; margin-bottom: 8px; opacity: .5; }
+
+/* ---------- 行内编辑 ---------- */
+.inline-edit { display: flex; gap: 6px; align-items: center; }
+.inline-edit input, .inline-edit select { height: 28px; font-size: 12.5px; padding: 0 8px; }
+
+/* ---------- 统计条 ---------- */
+.stat-row { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.stat {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 10px 16px;
+  display: flex; align-items: baseline; gap: 8px;
+  transition: transform .15s, box-shadow .15s;
+}
+.stat:hover { transform: translateY(-1px); box-shadow: var(--shadow-card); }
+.stat b { font-size: 18px; font-weight: 600; color: var(--primary); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--text-muted); }
+
+/* ---------- 模态框（公共） ---------- */
+.overlay {
+  position: fixed; inset: 0; background: rgba(28,27,26,.35);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+  animation: fadeIn .15s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: var(--bg-card); border-radius: 14px; padding: 20px 22px;
+  width: 360px; max-width: 90vw; max-height: 85vh; overflow-y: auto;
+  box-shadow: var(--shadow-modal);
+  animation: modalIn .2s ease;
+}
+.modal.wide { width: 460px; }
+.modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.modal-note { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; word-break: break-all; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+@keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+/* ---------- AI 操作栏（公共） ---------- */
+.ai-bar {
+  position: sticky; bottom: 12px; margin-top: 12px;
+  display: flex; gap: 10px; align-items: center;
+  background: var(--bg-card); border: 1px solid var(--primary);
+  border-radius: 12px; padding: 10px 14px;
+  box-shadow: 0 4px 16px rgba(62,99,221,.18);
+  z-index: 50; flex-wrap: wrap;
+  animation: slideUp .2s ease;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.ai-bar input { flex: 1; min-width: 200px; height: 32px; }
+
+/* ---------- Diff 预览（公共） ---------- */
+.diff-list { max-height: 50vh; overflow-y: auto; }
+.diff-item { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; transition: border-color .15s; }
+.diff-item:hover { border-color: var(--primary); }
+.diff-id { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+.diff-line { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 2px 0; flex-wrap: wrap; }
+.diff-field { color: var(--text-muted); min-width: 90px; font-size: 12px; }
+.diff-before { color: var(--danger); text-decoration: line-through; }
+.diff-after { color: var(--success); font-weight: 500; }
+.diff-arrow { color: var(--text-muted); }
+
+/* ---------- 加载骨架 ---------- */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-sunken) 25%, #f5f5f0 50%, var(--bg-sunken) 75%);
+  background-size: 200% 100%;
+  animation: skeleton 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+@keyframes skeleton { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ---------- 旋转动画 ---------- */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid var(--bg-sunken); border-top-color: var(--primary);
+  border-radius: 50%; animation: spin .6s linear infinite;
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 768px) {
+  .page-head h2 { font-size: 17px; }
+  .card { padding: 14px; }
+  .stat { padding: 8px 12px; }
+  .stat b { font-size: 16px; }
+  .modal { width: 92vw; padding: 16px; }
+  .modal.wide { width: 92vw; }
+  .ai-bar { padding: 8px 10px; }
+  .ai-bar input { min-width: 140px; }
+  table { font-size: 12px; }
+  tbody td, thead th { padding: 6px 8px; }
+}
+
+/* ---------- 滚动条美化 ---------- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }

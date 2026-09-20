@@ -1,0 +1,39 @@
+{
+  "scenario_id": "math_hard_integral",
+  "label": "高数-综合填空（积分综合计算，难度5）",
+  "category": "高数",
+  "before": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "你是一个专业的出题引擎，负责根据知识点生成高质量的练习题。\n\n请严格按照以下 JSON 格式输出，不要输出任何其他文字或代码块标记：\n\n{\n  \"schema_version\": \"2.0\",\n  \"type\": \"fill_cloze\",\n  \"question\": \"题目内容，用{{1}}{{2}}标记挖空位置\",\n  \"blanks\": [\n    {\"id\": 1, \"answer\": \"答案1\", \"hint\": \"提示1\"},\n    {\"id\": 2, \"answer\": \"答案2\", \"hint\": \"提示2\"}\n  ],\n  \"correct_answer\": [\"答案1\", \"答案2\"],\n  \"explanation\": \"详细解析\",\n  \"points\": 5,\n  \"difficulty\": 5\n}\n\n字段说明：\n- question: 题干，用{{数字}}标记挖空位置\n- blanks: 填空数组，每个包含id(对应占位符)、answer(标准答案)、hint(提示)\n- correct_answer: 答案数组，顺序与blanks一致\n- explanation: 详细的解题过程，包含每一步的推导\n- points: 分值\n- difficulty: 难度1-5\n\n挖空规则：\n- AI自行决定挖空位置，2-4个空\n- 每个空对应一个核心知识点或关键步骤\n- 题干中不能出现答案\n- 综合题应包含多个知识点的综合运用\n\n现在请根据以下参数生成题目：\n知识点：积分综合计算（换元法+分部积分+有理函数分解）\n题型：fill_cloze\n难度：5"
+      }
+    ],
+    "output": "{\n  \"schema_version\": \"2.0\",\n  \"type\": \"fill_cloze\",\n  \"question\": \"求不定积分 ∫ x^5 ln(x^2+1)/(x^2+1)^2 dx。令 t = x^2+1，则原积分可化为 1/2 ∫ ({{1}}) ln t dt。利用分部积分，∫ ln t dt = {{2}}，∫ ln t/t^2 dt = {{3}}，而 ∫ ln t/t dt = {{4}}。\",\n  \"blanks\": [\n    {\"id\": 1, \"answer\": \"1 - 2/t + 1/t^2\", \"hint\": \"将 (t-1)^2/t^2 展开并拆分\"},\n    {\"id\": 2, \"answer\": \"t ln t - t\", \"hint\": \"使用分部积分，u=ln t, dv=dt\"},\n    {\"id\": 3, \"answer\": \"- (ln t)/t - 1/t\", \"hint\": \"使用分部积分，u=ln t, dv=t^{-2}dt\"},\n    {\"id\": 4, \"answer\": \"1/2 (ln t)^2\", \"hint\": \"凑微分，因为 d(ln t)=dt/t\"}\n  ],\n  \"correct_answer\": [\"1 - 2/t + 1/t^2\", \"t ln t - t\", \"- (ln t)/t - 1/t\", \"1/2 (ln t)^2\"],\n  \"explanation\": \"令 t=x^2+1，则 dt=2x dx，x^5 dx=x^4·x dx=(t-1)^2·(1/2)dt。\\n原积分 I=∫ x^5 ln(x^2+1)/(x^2+1)^2 dx = 1/2∫((t-1)^2/t^2)ln t dt = 1/2∫(1-2/t+1/t^2)ln t dt。\\n分别计算：∫ln t dt=t ln t-t+C；∫ln t/t^2 dt=-(ln t)/t-1/t+C；∫ln t/t dt=1/2(ln t)^2+C。\\n因此 I=1/2[t ln t-t-(ln t)^2-(ln t)/t-1/t]+C。\\n代回 t=x^2+1，得最终结果：I=1/2(x^2+1)ln(x^2+1)-1/2(x^2+1)-1/2[ln(x^2+1)]^2-(ln(x^2+1))/(2(x^2+1))-1/(2(x^2+1))+C。\",\n  \"points\": 5,\n  \"difficulty\": 5\n}",
+    "usage": {
+      "prompt_tokens": 414,
+      "completion_tokens": 12616,
+      "total_tokens": 13030,
+      "prompt_tokens_details": {}
+    }
+  },
+  "after": {
+    "messages": [
+      {
+        "role": "system",
+        "content": "你是出题引擎。输出严格JSON，不要其他文字或代码块。输出紧凑JSON（单行，无缩进无换行）。\n\n字段定义：\n- question: string 题干，用 {{1}}{{2}} 标记挖空位\n- blanks: object[] 每个含 id(int)对应占位符, answer(string)标准答案, hint(string|null)提示\n- correct_answer: string[] 答案数组，顺序与blanks一致\n- explanation: string 解析(≤120字，综合题可稍长)\n- difficulty: int 难度(1-5)\n\n挖空规则：AI决定位置，2-4空，每空对应核心知识点或关键步骤，题干不出现答案。综合题应包含多个知识点的综合运用。"
+      },
+      {
+        "role": "user",
+        "content": "{\"knowledge\":\"积分综合计算（换元法+分部积分+有理函数分解）\",\"type\":\"fill_cloze\",\"difficulty\":5}"
+      }
+    ],
+    "output": "{\"question\":\"计算不定积分 I = ∫ e^{2x} ln(e^x+1) dx。令 t=e^x，则 I = ∫ {{1}} dt；分部积分得 I = {{2}} - (1/2)∫ t^2/(t+1) dt；由有理函数分解 t^2/(t+1) = {{3}}，最终 I = {{4}}。\",\"blanks\":[{\"id\":1,\"answer\":\"t ln(t+1)\",\"hint\":\"换元后注意 dx = dt/t，e^{2x}=t^2\"},{\"id\":2,\"answer\":\"(t^2/2) ln(t+1)\",\"hint\":\"取 u=ln(t+1)，dv=t dt\"},{\"id\":3,\"answer\":\"t - 1 + 1/(t+1)\",\"hint\":\"用多项式除法或凑项分解\"},{\"id\":4,\"answer\":\"((e^{2x}-1)/2) ln(e^x+1) - e^{2x}/4 + e^x/2 + C\",\"hint\":\"代回 t=e^x 并合并 ln 项\"}],\"correct_answer\":[\"t ln(t+1)\",\"(t^2/2) ln(t+1)\",\"t - 1 + 1/(t+1)\",\"((e^{2x}-1)/2) ln(e^x+1) - e^{2x}/4 + e^x/2 + C\"],\"explanation\":\"令 t=e^x 后化为 ∫ t ln(t+1) dt；分部积分得 (t^2/2)ln(t+1) - (1/2)∫ t^2/(t+1) dt；因 t^2/(t+1)=t-1+1/(t+1)，积分后代回 t=e^x，合并即得结果。\",\"difficulty\":5}",
+    "usage": {
+      "prompt_tokens": 274,
+      "completion_tokens": 3799,
+      "total_tokens": 4073,
+      "prompt_tokens_details": {}
+    }
+  }
+}

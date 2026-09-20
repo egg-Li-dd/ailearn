@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ai学 · 任务界面原型</title>
+<link rel="stylesheet" href="design-tokens.css">
+<style>
+  .mode-switch {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .mode-switch button {
+    flex: 1;
+    padding: 6px 0;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .mode-switch button.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  .course-header {
+    margin: 0 16px 12px;
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .course-color-bar {
+    width: 4px;
+    height: 36px;
+    border-radius: 2px;
+    background: var(--primary);
+    flex-shrink: 0;
+  }
+  .course-info { flex: 1; }
+  .course-name { font-size: var(--fs-h2); font-weight: 600; }
+  .course-time { font-size: var(--fs-secondary); color: var(--text-secondary); margin-top: 2px; }
+  .course-status {
+    font-size: var(--fs-caption);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+  .status-pre { background: var(--warning); color: #fff; }
+  .status-normal { background: var(--bg-sunken); color: var(--text-secondary); }
+  .status-in { background: var(--primary); color: #fff; }
+
+  .tasks-section { padding: 0 16px 100px; }
+  .section-label {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+    margin: 12px 0 8px;
+    font-weight: 500;
+    letter-spacing: .5px;
+  }
+
+  .pre-class-banner {
+    margin: 0 16px 12px;
+    background: linear-gradient(135deg, var(--warning-weak) 0%, var(--warning-weak-deep) 100%);
+    border: 1px solid var(--warning-weak-border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .pre-countdown {
+    font-size: var(--fs-display);
+    font-weight: 700;
+    color: var(--warning);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .pre-text { font-size: var(--fs-secondary); color: var(--text-secondary); }
+  .pre-text strong { color: var(--text); font-size: var(--fs-body); display: block; margin-bottom: 2px; }
+
+  .fullscreen-mode { display: none; }
+  .fullscreen-mode.show { display: flex; }
+
+  .fs-exit {
+    position: absolute;
+    top: 14px; right: 16px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.2);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; cursor: pointer; z-index: 210;
+    border: none;
+  }
+  .fs-task-label {
+    font-size: var(--fs-caption);
+    color: var(--primary);
+    font-weight: 600;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .fs-task-title {
+    font-size: var(--fs-h1);
+    font-weight: 600;
+    line-height: var(--lh-h1);
+    margin-bottom: 8px;
+  }
+  .fs-task-desc {
+    font-size: var(--fs-body);
+    color: var(--text-secondary);
+    line-height: var(--lh-body);
+    margin-bottom: 12px;
+  }
+  .fs-task-meta {
+    display: flex;
+    gap: 12px;
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+  }
+  .fs-task-meta span { display: flex; align-items: center; gap: 4px; }
+</style>
+</head>
+<body>
+<div class="prototype-page">
+  <div class="prototype-nav">
+    <a href="index.html">首页</a>
+    <a href="tasks.html" class="active">任务</a>
+    <a href="chat.html">答疑</a>
+    <a href="knowledge.html">知识库</a>
+    <a href="profile.html">我的</a>
+  </div>
+  <div class="prototype-label">任务界面 · 点击底部按钮切换 常态 / 课前 / 课中全屏</div>
+
+  <div class="phone-frame">
+    <div class="phone-notch"></div>
+    <div class="phone-statusbar">
+      <span>9:41</span>
+      <span style="display:flex;gap:5px;align-items:center;">
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx="1"/><rect x="4" y="4" width="3" height="7" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="20" height="10" rx="2.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="16" height="7" rx="1.5" fill="currentColor"/><rect x="21.5" y="3.5" width="1.5" height="4" rx=".75" fill="currentColor" opacity=".4"/></svg>
+      </span>
+    </div>
+
+    <div class="phone-content" id="phoneContent">
+      <!-- 页面头部 -->
+      <div class="page-header">
+        <div>
+          <div class="page-title">今日任务</div>
+          <div class="page-subtitle">8月22日 周六 · 3 节课 · 5 项任务</div>
+        </div>
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--primary-weak);display:flex;align-items:center;justify-content:center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+      </div>
+
+      <!-- 模式切换（原型用） -->
+      <div style="padding:0 16px 8px;">
+        <div class="mode-switch">
+          <button class="active" onclick="switchMode('normal')">常态</button>
+          <button onclick="switchMode('pre')">课前</button>
+          <button onclick="switchMode('fullscreen')">课中全屏</button>
+        </div>
+      </div>
+
+      <!-- 常态视图 -->
+      <div id="viewNormal">
+        <!-- 课程头卡 -->
+        <div class="course-header">
+          <div class="course-color-bar"></div>
+          <div class="course-info">
+            <div class="course-name">数据结构</div>
+            <div class="course-time">14:00 – 16:30 · 线上网课 · 第 12 讲</div>
+          </div>
+          <div class="course-status status-normal">待开始</div>
+        </div>
+
+        <div class="tasks-section">
+          <div class="section-label">课前预习 · 2 项</div>
+
+          <div class="task-card type-read status-done">
+            <div class="task-head">
+              <span class="task-type read">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                阅读
+              </span>
+              <div class="task-meta">
+                <span>15 min</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+            <div class="task-title">回顾上节课：栈与队列的应用</div>
+            <div class="task-knowledge">关联：栈的顺序存储 · 循环队列</div>
+          </div>
+
+          <div class="task-card type-memory status-doing">
+            <div class="task-head">
+              <span class="task-type memory">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                记忆
+              </span>
+              <div class="task-meta"><span>10 min</span></div>
+            </div>
+            <div class="task-title">默写树的三种遍历顺序模板</div>
+            <div class="task-knowledge">关联：二叉树遍历 · 递归模板</div>
+          </div>
+
+          <div class="section-label">课中任务 · 3 项</div>
+
+          <div class="task-card type-practice">
+            <div class="task-head">
+              <span class="task-type practice">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                练习
+              </span>
+              <div class="task-meta"><span>25 min</span></div>
+            </div>
+            <div class="task-title">实现二叉树的层序遍历（BFS）</div>
+            <div class="task-knowledge">关联：队列 · 二叉树 · BFS</div>
+          </div>
+
+          <div class="task-card type-think">
+            <div class="task-head">
+              <span class="task-type think">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                思考
+              </span>
+              <div class="task-meta"><span>15 min</span></div>
+            </div>
+            <div class="task-title">对比 DFS 与 BFS 的时空复杂度差异</div>
+            <div class="task-knowledge">关联：算法分析 · 递归栈</div>
+          </div>
+
+          <div class="task-card type-review">
+            <div class="task-head">
+              <span class="task-type review">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                复习
+              </span>
+              <div class="task-meta"><span>20 min</span></div>
+            </div>
+            <div class="task-title">课后巩固：3 道遍历变式题</div>
+            <div class="task-knowledge">关联：前序/中序/后序 · 迭代写法</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 课前视图 -->
+      <div id="viewPre" style="display:none;">
+        <div class="pre-class-banner">
+          <div class="pre-countdown">12:30</div>
+          <div class="pre-text">
+            <strong>距「数据结构」上课</strong>
+            建议先完成预习任务，进入课中模式效果更佳
+          </div>
+        </div>
+
+        <div class="course-header">
+          <div class="course-color-bar" style="background:var(--warning);"></div>
+          <div class="course-info">
+            <div class="course-name">数据结构</div>
+            <div class="course-time">14:00 – 16:30 · 线上网课</div>
+          </div>
+          <div class="course-status status-pre">课前</div>
+        </div>
+
+        <div class="tasks-section">
+          <div class="section-label">课前预习 · 完成 1/2</div>
+          <div class="task-card type-read status-done">
+            <div class="task-head">
+              <span class="task-type read">阅读</span>
+              <div class="task-meta"><span>15 min</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+            <div class="task-title">回顾上节课：栈与队列的应用</div>
+          </div>
+          <div class="task-card type-memory status-doing">
+            <div class="task-head">
+              <span class="task-type memory">记忆</span>
+              <div class="task-meta"><span>10 min</span></div>
+            </div>
+            <div class="task-title">默写树的三种遍历顺序模板</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 浮动按钮 -->
+      <div class="fab" onclick="switchMode('fullscreen')" title="问教练">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+    </div>
+
+    <!-- 底部 Tab -->
+    <div class="tabbar">
+      <a class="tabbar-item active" href="tasks.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>任务</span>
+      </a>
+      <a class="tabbar-item" href="chat.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>答疑</span>
+      </a>
+      <a class="tabbar-item" href="knowledge.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>知识库</span>
+      </a>
+      <a class="tabbar-item" href="profile.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>我的</span>
+      </a>
+    </div>
+
+    <!-- 课中全屏覆盖层 -->
+    <div class="fullscreen-mode" id="fullscreenMode">
+      <button class="fs-exit" onclick="switchMode('normal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="fullscreen-header">
+        <div style="font-size:12px;opacity:.8;margin-bottom:4px;">课中模式 · 数据结构 第12讲</div>
+        <div class="fullscreen-timer">01:23:45</div>
+        <div class="fullscreen-goal">
+          本课目标：
+          <ul>
+            <li>理解二叉树层序遍历的 BFS 思想</li>
+            <li>掌握队列在层序遍历中的应用</li>
+            <li>能独立写出迭代版三种遍历</li>
+          </ul>
+        </div>
+      </div>
+      <div class="fullscreen-body">
+        <div class="fs-task-label">当前任务 · 练习</div>
+        <div class="fullscreen-task">
+          <div class="fs-task-title">实现二叉树的层序遍历（BFS）</div>
+          <div class="fs-task-desc">使用队列辅助，按层输出二叉树节点值。注意处理空节点和分层存储。参考 LeetCode 102。</div>
+          <div class="fs-task-meta">
+            <span>⏱ 预计 25 min</span>
+            <span>📚 关联：队列 · BFS</span>
+            <span>⭐ 难度 3</span>
+          </div>
+        </div>
+
+        <div class="fs-task-label" style="color:var(--text-muted);">后续任务</div>
+        <div class="fullscreen-task dimmed" style="border-left-color:var(--success);">
+          <div class="fs-task-title" style="font-size:var(--fs-h2);">对比 DFS 与 BFS 的时空复杂度</div>
+          <div class="fs-task-meta"><span>⏱ 15 min</span><span>💡 思考</span></div>
+        </div>
+        <div class="fullscreen-task dimmed" style="border-left-color:var(--danger);">
+          <div class="fs-task-title" style="font-size:var(--fs-h2);">课后巩固：3 道遍历变式题</div>
+          <div class="fs-task-meta"><span>⏱ 20 min</span><span>🔄 复习</span></div>
+        </div>
+      </div>
+      <div class="fullscreen-footer">
+        <button class="btn btn-secondary btn-block" style="flex:1;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          问教练
+        </button>
+        <button class="btn btn-primary btn-block" style="flex:1.2;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          完成本任务
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchMode(mode) {
+  document.querySelectorAll('.mode-switch button').forEach(b => b.classList.remove('active'));
+  document.getElementById('viewNormal').style.display = 'none';
+  document.getElementById('viewPre').style.display = 'none';
+  document.getElementById('fullscreenMode').classList.remove('show');
+
+  if (mode === 'normal') {
+    document.querySelector('.mode-switch button:nth-child(1)').classList.add('active');
+    document.getElementById('viewNormal').style.display = 'block';
+  } else if (mode === 'pre') {
+    document.querySelector('.mode-switch button:nth-child(2)').classList.add('active');
+    document.getElementById('viewPre').style.display = 'block';
+  } else if (mode === 'fullscreen') {
+    document.querySelector('.mode-switch button:nth-child(3)').classList.add('active');
+    document.getElementById('fullscreenMode').classList.add('show');
+  }
+}
+</script>
+</body>
+</html>

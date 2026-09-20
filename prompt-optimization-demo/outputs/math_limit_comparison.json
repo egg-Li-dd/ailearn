@@ -1,0 +1,39 @@
+{
+  "scenario_id": "math_limit",
+  "label": "高数-单选（极限计算）",
+  "category": "高数",
+  "before": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "你是一个专业的出题引擎，负责根据知识点生成高质量的练习题。\n\n请严格按照以下 JSON 格式输出，不要输出任何其他文字或代码块标记：\n\n{\n  \"schema_version\": \"2.0\",\n  \"type\": \"single_choice\",\n  \"question\": \"题目内容\",\n  \"options\": [\"选项A\", \"选项B\", \"选项C\", \"选项D\"],\n  \"correct_answer\": 0,\n  \"explanation\": \"详细解析\",\n  \"analysis\": \"易错点分析\",\n  \"points\": 1,\n  \"difficulty\": 3\n}\n\n字段说明：\n- question: 题干，清晰描述问题\n- options: 4个选项的字符串数组\n- correct_answer: 正确选项的索引（0-3）\n- explanation: 详细的解题过程和答案说明\n- analysis: 易错点、混淆点分析\n- points: 分值\n- difficulty: 难度1-5\n\n现在请根据以下参数生成题目：\n知识点：极限的计算\n题型：single_choice\n难度：3"
+      }
+    ],
+    "output": "{\n  \"schema_version\": \"2.0\",\n  \"type\": \"single_choice\",\n  \"question\": \"求极限 lim_{x→0} (tan x - sin x) / x^3 = ?\",\n  \"options\": [\"0\", \"1/2\", \"1\", \"不存在\"],\n  \"correct_answer\": 1,\n  \"explanation\": \"当 x→0 时，tan x - sin x = sin x(1/cos x - 1) = sin x(1 - cos x)/cos x。利用等价无穷小：sin x ~ x，1 - cos x ~ x^2/2，cos x → 1，所以原式 = [x · (x^2/2)] / (1 · x^3) = 1/2。因此极限为 1/2。\",\n  \"analysis\": \"易错点在于将 tan x 和 sin x 分别替换为 x 后，分子变为 x - x = 0，导致错误。正确做法是先对分子进行恒等变形，提取公因式，再使用等价无穷小替换。\",\n  \"points\": 1,\n  \"difficulty\": 3\n}",
+    "usage": {
+      "prompt_tokens": 303,
+      "completion_tokens": 503,
+      "total_tokens": 806,
+      "prompt_tokens_details": {}
+    }
+  },
+  "after": {
+    "messages": [
+      {
+        "role": "system",
+        "content": "你是出题引擎。输出严格JSON，不要其他文字或代码块。输出紧凑JSON（单行，无缩进无换行）。\n\n字段定义：\n- question: string 题干\n- options: string[4] 四个选项\n- correct_answer: int 正确选项索引(0-3)\n- explanation: string 解析(≤80字)\n- difficulty: int 难度(1-5)"
+      },
+      {
+        "role": "user",
+        "content": "{\"knowledge\":\"极限的计算\",\"type\":\"single_choice\",\"difficulty\":3}"
+      }
+    ],
+    "output": "{\"question\":\"计算极限 lim(x→0) (sin 3x)/(2x) 的值是？\",\"options\":[\"3/2\",\"2/3\",\"1/2\",\"3\"],\"correct_answer\":0,\"explanation\":\"利用等价无穷小，当x→0时sin 3x~3x，故原式=lim(3x)/(2x)=3/2。\",\"difficulty\":3}",
+    "usage": {
+      "prompt_tokens": 187,
+      "completion_tokens": 129,
+      "total_tokens": 316,
+      "prompt_tokens_details": {}
+    }
+  }
+}

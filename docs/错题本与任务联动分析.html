@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>错题本与任务进度联动分析</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    padding: 24px;
+    line-height: 1.6;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 24px; margin-bottom: 8px; color: #1a1a2e; }
+  .subtitle { color: #666; margin-bottom: 24px; font-size: 14px; }
+
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .section h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e8ecf1;
+    color: #1a1a2e;
+  }
+
+  /* 流程图 */
+  .flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 20px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .flow-node {
+    background: #f0f4ff;
+    border: 2px solid #6b8afd;
+    border-radius: 10px;
+    padding: 14px 18px;
+    text-align: center;
+    min-width: 130px;
+    position: relative;
+  }
+  .flow-node .title { font-weight: 600; font-size: 14px; color: #2d3a8c; margin-bottom: 4px; }
+  .flow-node .desc { font-size: 12px; color: #666; }
+  .flow-node.problem {
+    background: #fff0f0;
+    border-color: #e74c3c;
+  }
+  .flow-node.problem .title { color: #c0392b; }
+  .flow-node.ok {
+    background: #f0fff4;
+    border-color: #27ae60;
+  }
+  .flow-node.ok .title { color: #1e8449; }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    font-size: 20px;
+    color: #999;
+    flex-shrink: 0;
+  }
+  .flow-arrow.dashed { color: #e74c3c; }
+
+  /* 阈值对比 */
+  .threshold-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .threshold-card {
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .threshold-card.task { background: #fff3e0; border: 1px solid #ffb74d; }
+  .threshold-card.wrong { background: #e3f2fd; border: 1px solid #64b5f6; }
+  .threshold-card .label { font-size: 13px; color: #666; margin-bottom: 6px; }
+  .threshold-card .value { font-size: 28px; font-weight: 700; }
+  .threshold-card.task .value { color: #e65100; }
+  .threshold-card.wrong .value { color: #1565c0; }
+  .threshold-card .note { font-size: 12px; color: #888; margin-top: 6px; }
+
+  .gap-band {
+    background: linear-gradient(90deg, #fff3e0, #ffebee, #e3f2fd);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    text-align: center;
+    font-size: 14px;
+    color: #c62828;
+    font-weight: 500;
+  }
+
+  /* 问题列表 */
+  .issue-list { list-style: none; }
+  .issue-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .issue-item:last-child { border-bottom: none; }
+  .issue-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e74c3c;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .issue-num.p1 { background: #e74c3c; }
+  .issue-num.p2 { background: #f39c12; }
+  .issue-num.p3 { background: #3498db; }
+  .issue-content .issue-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .issue-content .issue-desc { font-size: 13px; color: #666; }
+
+  /* 优化建议 */
+  .opt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .opt-card {
+    border-radius: 10px;
+    padding: 16px;
+    border-left: 4px solid;
+  }
+  .opt-card.high { background: #fef5f5; border-color: #e74c3c; }
+  .opt-card.mid { background: #fffaf0; border-color: #f39c12; }
+  .opt-card.low { background: #f0f9ff; border-color: #3498db; }
+  .opt-card .opt-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  .opt-card .opt-desc { font-size: 13px; color: #555; margin-bottom: 8px; }
+  .opt-card .opt-impact {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.06);
+    color: #666;
+  }
+
+  /* 闭环图 */
+  .loop-diagram {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 20px auto;
+    aspect-ratio: 1;
+  }
+  .loop-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: 600;
+    font-size: 13px;
+    z-index: 2;
+  }
+  .loop-node {
+    position: absolute;
+    width: 110px;
+    padding: 10px;
+    background: #fff;
+    border: 2px solid #6b8afd;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .loop-node.n1 { top: 0; left: 50%; transform: translateX(-50%); }
+  .loop-node.n2 { top: 50%; right: 0; transform: translateY(-50%); }
+  .loop-node.n3 { bottom: 0; left: 50%; transform: translateX(-50%); }
+  .loop-node.n4 { top: 50%; left: 0; transform: translateY(-50%); }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-weight: normal;
+  }
+  .tag.p0 { background: #ffebee; color: #c62828; }
+  .tag.p1 { background: #fff3e0; color: #e65100; }
+  .tag.p2 { background: #e3f2fd; color: #1565c0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>错题本与任务进度联动分析</h1>
+  <p class="subtitle">基于当前代码实现的现状诊断与优化建议</p>
+
+  <!-- 一、当前联动机制 -->
+  <div class="section">
+    <h2>一、当前联动机制</h2>
+    <div class="flow">
+      <div class="flow-node">
+        <div class="title">任务布置</div>
+        <div class="desc">绑定 target_knowledge_id</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="title">生成检测题</div>
+        <div class="desc">ensure_task_quiz<br>3-5题/知识点</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="title">用户答题</div>
+        <div class="desc">submit_answers<br>AI判卷 0-100分</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node ok">
+        <div class="title">任务状态更新</div>
+        <div class="desc">≥80分 → DONE<br>&lt;80分 → 保持TODO</div>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="flow-node problem">
+        <div class="title">错题本收录</div>
+        <div class="desc">score &lt; 60 自动收录<br>去重+记录错误次数</div>
+      </div>
+      <div class="flow-arrow dashed">⇡ 被动收录，无反向联动</div>
+      <div class="flow-node">
+        <div class="title">QuizAnswer 表</div>
+        <div class="desc">所有答题记录<br>score 字段</div>
+      </div>
+      <div class="flow-arrow">←</div>
+      <div class="flow-node">
+        <div class="title">答题判卷</div>
+        <div class="desc">写入 QuizAnswer</div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:#888;margin-top:12px;">
+      <strong>核心发现：</strong>错题本是<strong>单向被动收录</strong>，只从 QuizAnswer 读取 score&lt;60 的记录，没有任何反向影响任务状态的逻辑。
+    </p>
+  </div>
+
+  <!-- 二、核心问题：阈值断层 -->
+  <div class="section">
+    <h2>二、核心问题：阈值断层 <span class="tag p0">P0</span></h2>
+    <div class="threshold-compare">
+      <div class="threshold-card task">
+        <div class="label">任务通过阈值（pass_score）</div>
+        <div class="value">≥ 80 分</div>
+        <div class="note">低于80 → 任务未完成</div>
+      </div>
+      <div class="threshold-card wrong">
+        <div class="label">错题收录阈值（WRONG_THRESHOLD）</div>
+        <div class="value">&lt; 60 分</div>
+        <div class="note">仅低于60 → 进入错题本</div>
+      </div>
+    </div>
+    <div class="gap-band">
+      ⚠️ 得分在 60~79 分之间的题目：任务判定未通过，但错题本不收录 → 用户无法针对性复习
+    </div>
+    <p style="font-size:13px;color:#666;">
+      举例：用户任务检测得了 70 分，任务显示"未通过"，但错题本里没有这些题。用户不知道错在哪，也无法重练，任务永远卡在 TODO 状态。
+    </p>
+  </div>
+
+  <!-- 三、其他问题 -->
+  <div class="section">
+    <h2>三、其他联动缺陷</h2>
+    <ul class="issue-list">
+      <li class="issue-item">
+        <div class="issue-num p1">2</div>
+        <div class="issue-content">
+          <div class="issue-title">错题重练结果不回写任务 <span class="tag p1">P1</span></div>
+          <div class="issue-desc">用户在错题本重练错题并答对后，任务的 passed/actual_score 不会更新。已掌握的知识点，任务仍然显示未完成。</div>
+        </div>
+      </li>
+      <li class="issue-item">
+        <div class="issue-num p1">3</div>
+        <div class="issue-content">
+          <div class="issue-title">任务未通过时不自动加入复习计划 <span class="tag p1">P1</span></div>
+          <div class="issue-desc">任务检测未通过后，错题只是被动收录，没有自动加入 FSRS 复习队列或错题本的"今日复习"列表。用户需要手动发现和复习。</div>
+        </div>
+      </li>
+      <li class="issue-item">
+        <div class="issue-num p2">4</div>
+        <div class="issue-content">
+          <div class="issue-title">错题本无"已掌握"状态 <span class="tag p2">P2</span></div>
+          <div class="issue-desc">错题一旦收录就永远在列表里，重练答对后不会标记为"已掌握"或移出。错题本会越来越臃肿，无法区分"待复习"和"已掌握"。</div>
+        </div>
+      </li>
+      <li class="issue-item">
+        <div class="issue-num p2">5</div>
+        <div class="issue-content">
+          <div class="issue-title">薄弱点诊断与任务目标脱节 <span class="tag p2">P2</span></div>
+          <div class="issue-desc">错题本的薄弱知识点是全局统计，没有针对"当前未完成任务的 target_knowledge_id"做定向分析。用户不知道优先复习哪个知识点能通过卡住的任务。</div>
+        </div>
+      </li>
+      <li class="issue-item">
+        <div class="issue-num p3">6</div>
+        <div class="issue-content">
+          <div class="issue-title">两套复习系统重复 <span class="tag p3">P3</span></div>
+          <div class="issue-desc">任务有 FSRS 复习队列（review router），错题本有自己的复习推荐。两者独立运行，可能重复推送相同知识点的题目。</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 四、优化建议 -->
+  <div class="section">
+    <h2>四、优化建议（按优先级）</h2>
+    <div class="opt-grid">
+      <div class="opt-card high">
+        <div class="opt-title">① 统一阈值：错题收录改为 &lt; pass_score</div>
+        <div class="opt-desc">将错题收录阈值从固定 60 分改为与任务的 pass_score（默认80）对齐。任务未通过的题自动进入错题本，消除 60-79 分的断层。</div>
+        <span class="opt-impact">改动量：小 | 影响：核心闭环</span>
+      </div>
+      <div class="opt-card high">
+        <div class="opt-title">② 错题重练通过后自动完成任务</div>
+        <div class="opt-desc">错题本重练时，如果题目关联的任务检测题全部答对，自动将对应任务标记为 DONE，更新 actual_score 和 passed。形成"答错→收录→重练→掌握→任务完成"闭环。</div>
+        <span class="opt-impact">改动量：中 | 影响：用户体验</span>
+      </div>
+      <div class="opt-card mid">
+        <div class="opt-title">③ 任务未通过自动加入复习计划</div>
+        <div class="opt-desc">submit_task_quiz_result 未通过时，自动将关联知识点加入 FSRS 复习队列，并在错题本标记为"优先复习"。用户下次打开 App 就能看到针对性复习内容。</div>
+        <span class="opt-impact">改动量：中 | 影响：学习效率</span>
+      </div>
+      <div class="opt-card mid">
+        <div class="opt-title">④ 错题增加"已掌握"状态</div>
+        <div class="opt-desc">在错题本中增加 mastered 标记（基于 QuizAnswer 最近一次得分≥80）。列表默认只显示未掌握的错题，已掌握的可筛选查看。避免错题本无限膨胀。</div>
+        <span class="opt-impact">改动量：小 | 影响：数据整洁</span>
+      </div>
+      <div class="opt-card low">
+        <div class="opt-title">⑤ 任务详情页展示关联错题</div>
+        <div class="opt-desc">在未完成任务的详情页中，直接展示该任务检测题中答错的题目和薄弱知识点，提供"立即复习"按钮，跳转到错题本对应题目。</div>
+        <span class="opt-impact">改动量：小 | 影响：操作路径</span>
+      </div>
+      <div class="opt-card low">
+        <div class="opt-title">⑥ 统一复习入口</div>
+        <div class="opt-desc">长期将 FSRS 复习队列和错题本复习推荐合并为统一的"今日复习"模块，按优先级排序：未通过任务的错题 → 高频错题 → 到期复习卡片。</div>
+        <span class="opt-impact">改动量：大 | 影响：架构优化</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 五、目标闭环 -->
+  <div class="section">
+    <h2>五、优化后的目标闭环</h2>
+    <div class="loop-diagram">
+      <div class="loop-center">学习闭环</div>
+      <div class="loop-node n1">📋 任务布置<br><small>绑定知识点</small></div>
+      <div class="loop-node n2">❌ 检测未通过<br><small>自动收录错题<br>加入复习计划</small></div>
+      <div class="loop-node n3">🔄 错题重练<br><small>针对性练习</small></div>
+      <div class="loop-node n4">✅ 掌握通过<br><small>标记已掌握<br>任务自动完成</small></div>
+    </div>
+    <p style="text-align:center;font-size:13px;color:#888;margin-top:16px;">
+      从"单向被动收录"升级为"双向闭环联动"：答错自动收录，重练通过自动完成任务
+    </p>
+  </div>
+</div>
+</body>
+</html>

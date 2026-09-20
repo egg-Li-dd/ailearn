@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>提示词结构优化方案 - 成果展示</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.6;
+    padding: 20px;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-radius: 16px;
+    margin-bottom: 30px;
+    border: 1px solid #334155;
+  }
+  .header h1 {
+    font-size: 32px;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+  }
+  .header p { color: #94a3b8; font-size: 16px; }
+
+  /* Overview Cards */
+  .overview {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+  .stat-card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid #334155;
+    text-align: center;
+  }
+  .stat-card .label { font-size: 13px; color: #94a3b8; margin-bottom: 8px; }
+  .stat-card .value { font-size: 36px; font-weight: 700; }
+  .stat-card .value.blue { color: #60a5fa; }
+  .stat-card .value.green { color: #4ade80; }
+  .stat-card .value.purple { color: #a78bfa; }
+  .stat-card .value.orange { color: #fb923c; }
+  .stat-card .sub { font-size: 12px; color: #64748b; margin-top: 4px; }
+
+  /* Section */
+  .section {
+    background: #1e293b;
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 24px;
+    border: 1px solid #334155;
+  }
+  .section-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #f1f5f9;
+  }
+  .section-desc { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+
+  /* Comparison */
+  .comparison-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .comparison-title { font-size: 18px; font-weight: 600; color: #e2e8f0; }
+  .comparison-meta { font-size: 13px; color: #64748b; }
+  .savings-badge {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .prompt-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .prompt-box {
+    background: #0f172a;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    overflow: hidden;
+  }
+  .prompt-box-header {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .prompt-box.before .prompt-box-header { background: #7f1d1d; color: #fca5a5; }
+  .prompt-box.after .prompt-box-header { background: #14532d; color: #86efac; }
+  .prompt-token { font-size: 12px; opacity: 0.8; }
+  .prompt-content {
+    padding: 16px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 400px;
+    overflow-y: auto;
+    color: #cbd5e1;
+  }
+  .prompt-content::-webkit-scrollbar { width: 6px; }
+  .prompt-content::-webkit-scrollbar-track { background: #1e293b; }
+  .prompt-content::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+
+  /* Bar Chart */
+  .chart-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .chart-label { width: 140px; font-size: 13px; color: #94a3b8; text-align: right; }
+  .chart-bar-container { flex: 1; height: 28px; background: #0f172a; border-radius: 6px; overflow: hidden; position: relative; }
+  .chart-bar {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    transition: width 0.8s ease;
+  }
+  .chart-bar.before { background: linear-gradient(90deg, #dc2626, #ef4444); }
+  .chart-bar.after { background: linear-gradient(90deg, #16a34a, #22c55e); }
+
+  /* Optimization notes */
+  .optimization-notes {
+    background: #0f172a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    border-left: 4px solid #a78bfa;
+    margin-top: 16px;
+  }
+  .optimization-notes h4 { color: #a78bfa; font-size: 14px; margin-bottom: 8px; }
+  .optimization-notes ul { list-style: none; padding: 0; }
+  .optimization-notes li {
+    font-size: 13px;
+    color: #cbd5e1;
+    padding: 4px 0;
+    padding-left: 20px;
+    position: relative;
+  }
+  .optimization-notes li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #a78bfa;
+  }
+
+  /* Structural comparison table */
+  .struct-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-size: 13px;
+  }
+  .struct-table th {
+    background: #0f172a;
+    padding: 12px 16px;
+    text-align: left;
+    color: #94a3b8;
+    font-weight: 600;
+    border-bottom: 2px solid #334155;
+  }
+  .struct-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #1e293b;
+    color: #cbd5e1;
+  }
+  .struct-table tr:hover { background: #0f172a; }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tag.red { background: #7f1d1d; color: #fca5a5; }
+  .tag.green { background: #14532d; color: #86efac; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 30px;
+    color: #64748b;
+    font-size: 13px;
+  }
+
+  @media (max-width: 900px) {
+    .overview { grid-template-columns: repeat(2, 1fr); }
+    .prompt-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>提示词结构优化方案</h1>
+    <p>在不影响输出效果的前提下，通过结构化改造降低 Token 消耗量</p>
+  </div>
+
+  <!-- Overview -->
+  <div class="overview">
+    <div class="stat-card">
+      <div class="label">优化前总 Token</div>
+      <div class="value orange">1006.6</div>
+      <div class="sub">3 个场景合计（估算）</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">优化后总 Token</div>
+      <div class="value blue">448.5</div>
+      <div class="sub">3 个场景合计（估算）</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">总节省</div>
+      <div class="value green">558.1</div>
+      <div class="sub">Token / 次调用</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">节省比例</div>
+      <div class="value purple">55.4%</div>
+      <div class="sub">平均降幅</div>
+    </div>
+  </div>
+
+  <!-- Core Strategy -->
+  <div class="section">
+    <div class="section-title">核心优化策略</div>
+    <div class="section-desc">从"内容精简"升级为"结构重构"，四项结构性改造</div>
+    <table class="struct-table">
+      <thead>
+        <tr>
+          <th style="width:25%">优化维度</th>
+          <th style="width:35%">优化前</th>
+          <th style="width:35%">优化后</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>消息架构</strong></td>
+          <td><span class="tag red">只有 user</span> 静态规则和动态参数全塞 user prompt，每次重复发送</td>
+          <td><span class="tag green">system + user</span> 静态规则进 system（可被模型缓存），动态参数进 user</td>
+        </tr>
+        <tr>
+          <td><strong>System 结构</strong></td>
+          <td><span class="tag red">纯文本拼接</span> 角色、规则、上下文混在一起，无分区</td>
+          <td><span class="tag green">分区结构化</span> 【角色】【规则】【上下文】明确分隔，AI 理解更稳定</td>
+        </tr>
+        <tr>
+          <td><strong>JSON 格式</strong></td>
+          <td><span class="tag red">完整示例</span> 每题带 180-300 字 JSON 示例，含占位符，AI 可能照搬</td>
+          <td><span class="tag green">字段定义表</span> 字段名+类型+约束，80-120 字，更清晰更省 token</td>
+        </tr>
+        <tr>
+          <td><strong>要求描述</strong></td>
+          <td><span class="tag red">逐条展开</span> 填空 7 条、背诵 6 条要求，每条完整句子</td>
+          <td><span class="tag green">规则段合并</span> 合并为精简规则段，保留核心约束，去掉重复表述</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Comparison 1: Classroom System -->
+  <div class="section">
+    <div class="comparison-header">
+      <div>
+        <div class="comparison-title">场景一：课堂系统提示词</div>
+        <div class="comparison-meta">每次课堂交互必发 · 最高频场景</div>
+      </div>
+      <div class="savings-badge">节省 64.9%</div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-label">优化前</div>
+      <div class="chart-bar-container">
+        <div class="chart-bar before" style="width:100%">491.6 tokens</div>
+      </div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-label">优化后</div>
+      <div class="chart-bar-container">
+        <div class="chart-bar after" style="width:35.1%">172.6 tokens</div>
+      </div>
+    </div>
+
+    <div class="prompt-grid" style="margin-top:20px">
+      <div class="prompt-box before">
+        <div class="prompt-box-header">
+          <span>优化前 · 纯文本拼接</span>
+          <span class="prompt-token">491.6 tokens</span>
+        </div>
+        <div class="prompt-content" id="before-classroom"></div>
+      </div>
+      <div class="prompt-box after">
+        <div class="prompt-box-header">
+          <span>优化后 · 分区结构化</span>
+          <span class="prompt-token">172.6 tokens</span>
+        </div>
+        <div class="prompt-content" id="after-classroom"></div>
+      </div>
+    </div>
+
+    <div class="optimization-notes">
+      <h4>优化要点</h4>
+      <ul>
+        <li>知识点讲解要求从 200 字（①②③④逐条展开）压缩为 40 字规则句（定义→要点→例子→误区）</li>
+        <li>总结知识点要求从 250 字（5步流程完整描述）压缩为 50 字（自动基于任务列表，不需用户指定）</li>
+        <li>动态上下文（课程名/知识点）从末尾拼接改为【上下文】分区，与静态规则明确分隔</li>
+        <li>保留所有核心约束（详细展开、禁止一句话概括、自动确定范围），不影响输出质量</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Comparison 2: Quiz Single Choice -->
+  <div class="section">
+    <div class="comparison-header">
+      <div>
+        <div class="comparison-title">场景二：出题 - 单项选择</div>
+        <div class="comparison-meta">每题一次 · 中等频率</div>
+      </div>
+      <div class="savings-badge">节省 40.9%</div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-label">优化前</div>
+      <div class="chart-bar-container">
+        <div class="chart-bar before" style="width:100%">168.4 tokens</div>
+      </div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-label">优化后</div>
+      <div class="chart-bar-container">
+        <div class="chart-bar after" style="width:59.1%">99.5 tokens</div>
+      </div>
+    </div>
+
+    <div class="prompt-grid" style="margin-top:20px">
+      <div class="prompt-box before">
+        <div class="prompt-box-header">
+          <span>优化前 · 只有 user（含完整JSON示例）</span>
+          <span class="prompt-token">168.4 tokens</span>
+        </div>
+        <div class="prompt-content" id="before-quiz-sc"></div>
+      </div>
+      <div class="prompt-box after">
+        <div class="prompt-box-header">
+          <span>优化后 · system(字段定义) + user(参数)</span>
+          <span class="prompt-token">99.5 tokens</span>
+        </div>
+        <div class="prompt-content" id="after-quiz-sc"></div>
+      </div>
+    </div>
+
+    <div class="optimization-notes">
+      <h4>优化要点</h4>
+      <ul>
+        <li>引入 system prompt 承载通用出题规则和 JSON 字段定义，user 只传动态参数（知识点/题型/难度）</li>
+        <li>JSON 格式从 180 字完整示例（含"题干""A""解析..."占位符）改为 60 字字段定义表（字段名+类型+约束）</li>
+        <li>去掉冗余的 schema_version/type/points/analysis 字段（后端可自动补全），只保留 AI 需要生成的核心字段</li>
+        <li>system 部分支持模型 prompt caching，连续出题时后续调用近乎免费</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Comparison 3: Quiz Fill Cloze -->
+  <div class="section">
+    <div class="comparison-header">
+      <div>
+        <div class="comparison-title">场景三：出题 - 填空（挖空）</div>
+        <div class="comparison-meta">每题一次 · 高消耗场景（原 prompt 最长）</div>
+      </div>
+      <div class="savings-badge">节省 49.1%</div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-label">优化前</div>
+      <div class="chart-bar-container">
+        <div class="chart-bar before" style="width:100%">346.6 tokens</div>
+      </div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-label">优化后</div>
+      <div class="chart-bar-container">
+        <div class="chart-bar after" style="width:50.9%">176.4 tokens</div>
+      </div>
+    </div>
+
+    <div class="prompt-grid" style="margin-top:20px">
+      <div class="prompt-box before">
+        <div class="prompt-box-header">
+          <span>优化前 · 只有 user（7条要求+完整JSON）</span>
+          <span class="prompt-token">346.6 tokens</span>
+        </div>
+        <div class="prompt-content" id="before-quiz-fc"></div>
+      </div>
+      <div class="prompt-box after">
+        <div class="prompt-box-header">
+          <span>优化后 · system(字段定义+规则) + user(参数)</span>
+          <span class="prompt-token">176.4 tokens</span>
+        </div>
+        <div class="prompt-content" id="after-quiz-fc"></div>
+      </div>
+    </div>
+
+    <div class="optimization-notes">
+      <h4>优化要点</h4>
+      <ul>
+        <li>7 条要求（占位符规则/挖空数量/blanks对应/hint/correct_answer/题干不含答案）合并为 2 行规则段</li>
+        <li>JSON 示例从 250 字（含完整 blanks 数组示例、hint 示例）压缩为 80 字字段定义</li>
+        <li>blanks 字段定义用 object[] 简写（id/answer/hint），不再展开完整示例</li>
+        <li>保留所有核心约束（2-3空、每空对应知识点、题干不含答案），不影响出题质量</li>
+      </ul>
+    </div>
+  </div>
+
+  
+  
+  <!-- High Math Detailed Questions -->
+  <div class="section">
+    <div class="section-title">高数题详细内容展示</div>
+    <div class="section-desc">高数知识点（极限、积分、导数应用）优化前后 AI 生成的完整题目对比</div>
+
+    <div style="margin-bottom:30px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #334155;flex-wrap:wrap;gap:8px;">
+        <h3 style="font-size:17px;color:#f1f5f9;margin:0;">高数-单选（极限计算）</h3>
+        <span style="background:#4ade8020;color:#4ade80;padding:4px 12px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid #4ade8040;">节省 490 tokens (60.8%)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div style="text-align:center;padding:8px;background:#7f1d1d;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:#fca5a5;">优化前 · total=806</div>
+          
+    <div style="background:#0f172a;border-radius:12px;border:1px solid #334155;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#60a5fa15;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="background:#60a5fa;color:#0f172a;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;">单项选择</span>
+          <span style="font-size:14px;font-weight:600;color:#e2e8f0;">优化前</span>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;">
+          prompt=303 · completion=503 · total=<strong style="color:#60a5fa;">806</strong>
+        </div>
+      </div>
+      <div style="padding:20px;">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">题干</div>
+          <div style="font-size:15px;color:#e2e8f0;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #60a5fa;">求极限 lim_{x→0} (tan x - sin x) / x^3 = ?</div>
+        </div>
+    <div style="margin-bottom:16px;"><div style="font-size:12px;color:#64748b;margin-bottom:8px;font-weight:600;">选项</div><div style="display:flex;flex-direction:column;gap:8px;"><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#cbd5e1;min-width:60px;font-size:12px;">A</span><span style="color:#cbd5e1;font-size:14px;line-height:1.6;">0</span></div><div style="padding:10px 14px;border-radius:8px;background:#14532d;border:1px solid #22c55e;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#86efac;min-width:60px;font-size:12px;">正确答案</span><span style="color:#86efac;font-size:14px;line-height:1.6;">1/2</span></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#cbd5e1;min-width:60px;font-size:12px;">C</span><span style="color:#cbd5e1;font-size:14px;line-height:1.6;">1</span></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#cbd5e1;min-width:60px;font-size:12px;">D</span><span style="color:#cbd5e1;font-size:14px;line-height:1.6;">不存在</span></div></div></div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">解析（163字）</div>
+      <div style="font-size:14px;color:#cbd5e1;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #fbbf24;">当 x→0 时，tan x - sin x = sin x(1/cos x - 1) = sin x(1 - cos x)/cos x。利用等价无穷小：sin x ~ x，1 - cos x ~ x^2/2，cos x → 1，所以原式 = [x · (x^2/2)] / (1 · x^3) = 1/2。因此极限为 1/2。</div>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;"><div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">其他字段</div><div style="display:flex;flex-wrap:wrap;gap:6px;"><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">schema_version: <span style="color:#cbd5e1;">2.0</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">type: <span style="color:#cbd5e1;">single_choice</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">analysis: <span style="color:#cbd5e1;">易错点在于将 tan x 和 sin x 分别替换为 x 后，分子变为 x - ...</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">points: <span style="color:#cbd5e1;">1</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">difficulty: <span style="color:#cbd5e1;">3</span></span></div></div></div></div>
+        </div>
+        <div>
+          <div style="text-align:center;padding:8px;background:#14532d;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:#86efac;">优化后 · total=316</div>
+          
+    <div style="background:#0f172a;border-radius:12px;border:1px solid #334155;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#60a5fa15;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="background:#60a5fa;color:#0f172a;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;">单项选择</span>
+          <span style="font-size:14px;font-weight:600;color:#e2e8f0;">优化后</span>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;">
+          prompt=187 · completion=129 · total=<strong style="color:#60a5fa;">316</strong>
+        </div>
+      </div>
+      <div style="padding:20px;">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">题干</div>
+          <div style="font-size:15px;color:#e2e8f0;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #60a5fa;">计算极限 lim(x→0) (sin 3x)/(2x) 的值是？</div>
+        </div>
+    <div style="margin-bottom:16px;"><div style="font-size:12px;color:#64748b;margin-bottom:8px;font-weight:600;">选项</div><div style="display:flex;flex-direction:column;gap:8px;"><div style="padding:10px 14px;border-radius:8px;background:#14532d;border:1px solid #22c55e;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#86efac;min-width:60px;font-size:12px;">正确答案</span><span style="color:#86efac;font-size:14px;line-height:1.6;">3/2</span></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#cbd5e1;min-width:60px;font-size:12px;">B</span><span style="color:#cbd5e1;font-size:14px;line-height:1.6;">2/3</span></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#cbd5e1;min-width:60px;font-size:12px;">C</span><span style="color:#cbd5e1;font-size:14px;line-height:1.6;">1/2</span></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#cbd5e1;min-width:60px;font-size:12px;">D</span><span style="color:#cbd5e1;font-size:14px;line-height:1.6;">3</span></div></div></div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">解析（44字）</div>
+      <div style="font-size:14px;color:#cbd5e1;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #fbbf24;">利用等价无穷小，当x→0时sin 3x~3x，故原式=lim(3x)/(2x)=3/2。</div>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;"><div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">其他字段</div><div style="display:flex;flex-wrap:wrap;gap:6px;"><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">difficulty: <span style="color:#cbd5e1;">3</span></span></div></div></div></div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="margin-bottom:30px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #334155;flex-wrap:wrap;gap:8px;">
+        <h3 style="font-size:17px;color:#f1f5f9;margin:0;">高数-填空（不定积分）</h3>
+        <span style="background:#f8717120;color:#f87171;padding:4px 12px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid #f8717140;">反增 4348 tokens (269.9%)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div style="text-align:center;padding:8px;background:#7f1d1d;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:#fca5a5;">优化前 · total=1611</div>
+          
+    <div style="background:#0f172a;border-radius:12px;border:1px solid #334155;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#a78bfa15;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="background:#a78bfa;color:#0f172a;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;">填空挖空</span>
+          <span style="font-size:14px;font-weight:600;color:#e2e8f0;">优化前</span>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;">
+          prompt=384 · completion=1227 · total=<strong style="color:#a78bfa;">1611</strong>
+        </div>
+      </div>
+      <div style="padding:20px;">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">题干</div>
+          <div style="font-size:15px;color:#e2e8f0;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #a78bfa;">计算不定积分 \int x \cos x \, dx = x \sin x + {{1}} + C，该结果是通过{{2}}法得到的。</div>
+        </div>
+    <div style="margin-bottom:16px;"><div style="font-size:12px;color:#64748b;margin-bottom:8px;font-weight:600;">填空答案</div><div style="display:flex;flex-direction:column;gap:8px;"><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空1</span><span style="color:#86efac;font-size:14px;font-weight:600;">cos x</span></div><div style="font-size:12px;color:#94a3b8;margin-left:4px;">提示：注意分部积分后还需计算一个简单积分，结果含三角函数</div></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空2</span><span style="color:#86efac;font-size:14px;font-weight:600;">分部积分</span></div><div style="font-size:12px;color:#94a3b8;margin-left:4px;">提示：适用于两类不同函数乘积的积分</div></div></div></div><div style="margin-bottom:16px;padding:10px 14px;border-radius:8px;background:#14532d;border:1px solid #22c55e;"><span style="font-size:12px;color:#86efac;font-weight:600;">correct_answer: </span><span style="color:#86efac;font-size:14px;">["cos x", "分部积分"]</span></div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">解析（151字）</div>
+      <div style="font-size:14px;color:#cbd5e1;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #fbbf24;">令 u = x，dv = cos x dx，则 du = dx，v = sin x。由分部积分公式 ∫u dv = uv - ∫v du，得 ∫x cos x dx = x sin x - ∫sin x dx = x sin x + cos x + C。因此空1应填 cos x，所用方法为分部积分法。</div>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;"><div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">其他字段</div><div style="display:flex;flex-wrap:wrap;gap:6px;"><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">schema_version: <span style="color:#cbd5e1;">2.0</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">type: <span style="color:#cbd5e1;">fill_cloze</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">points: <span style="color:#cbd5e1;">2</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">difficulty: <span style="color:#cbd5e1;">3</span></span></div></div></div></div>
+        </div>
+        <div>
+          <div style="text-align:center;padding:8px;background:#14532d;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:#86efac;">优化后 · total=5959</div>
+          
+    <div style="background:#0f172a;border-radius:12px;border:1px solid #334155;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#a78bfa15;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="background:#a78bfa;color:#0f172a;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;">填空挖空</span>
+          <span style="font-size:14px;font-weight:600;color:#e2e8f0;">优化后</span>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;">
+          prompt=244 · completion=5715 · total=<strong style="color:#a78bfa;">5959</strong>
+        </div>
+      </div>
+      <div style="padding:20px;">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">题干</div>
+          <div style="font-size:15px;color:#e2e8f0;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #a78bfa;">计算不定积分 ∫ (2x+3)^2 dx = {{1}}x^3 + {{2}}x^2 + {{3}}x + C。</div>
+        </div>
+    <div style="margin-bottom:16px;"><div style="font-size:12px;color:#64748b;margin-bottom:8px;font-weight:600;">填空答案</div><div style="display:flex;flex-direction:column;gap:8px;"><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空1</span><span style="color:#86efac;font-size:14px;font-weight:600;">4/3</span></div><div style="font-size:12px;color:#94a3b8;margin-left:4px;">提示：x^3的系数</div></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空2</span><span style="color:#86efac;font-size:14px;font-weight:600;">6</span></div><div style="font-size:12px;color:#94a3b8;margin-left:4px;">提示：x^2的系数</div></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空3</span><span style="color:#86efac;font-size:14px;font-weight:600;">9</span></div><div style="font-size:12px;color:#94a3b8;margin-left:4px;">提示：x的系数</div></div></div></div><div style="margin-bottom:16px;padding:10px 14px;border-radius:8px;background:#14532d;border:1px solid #22c55e;"><span style="font-size:12px;color:#86efac;font-weight:600;">correct_answer: </span><span style="color:#86efac;font-size:14px;">["4/3", "6", "9"]</span></div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">解析（46字）</div>
+      <div style="font-size:14px;color:#cbd5e1;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #fbbf24;">展开(2x+3)^2=4x^2+12x+9，逐项积分得(4/3)x^3+6x^2+9x+C。</div>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;"><div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">其他字段</div><div style="display:flex;flex-wrap:wrap;gap:6px;"><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">difficulty: <span style="color:#cbd5e1;">3</span></span></div></div></div></div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="margin-bottom:30px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #334155;flex-wrap:wrap;gap:8px;">
+        <h3 style="font-size:17px;color:#f1f5f9;margin:0;">高数-单选（导数应用）</h3>
+        <span style="background:#4ade8020;color:#4ade80;padding:4px 12px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid #4ade8040;">节省 478 tokens (59.5%)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div style="text-align:center;padding:8px;background:#7f1d1d;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:#fca5a5;">优化前 · total=803</div>
+          
+    <div style="background:#0f172a;border-radius:12px;border:1px solid #334155;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#60a5fa15;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="background:#60a5fa;color:#0f172a;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;">单项选择</span>
+          <span style="font-size:14px;font-weight:600;color:#e2e8f0;">优化前</span>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;">
+          prompt=309 · completion=494 · total=<strong style="color:#60a5fa;">803</strong>
+        </div>
+      </div>
+      <div style="padding:20px;">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">题干</div>
+          <div style="font-size:15px;color:#e2e8f0;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #60a5fa;">函数 f(x)=x^3-3x^2+1 的单调递减区间是？</div>
+        </div>
+    <div style="margin-bottom:16px;"><div style="font-size:12px;color:#64748b;margin-bottom:8px;font-weight:600;">选项</div><div style="display:flex;flex-direction:column;gap:8px;"><div style="padding:10px 14px;border-radius:8px;background:#14532d;border:1px solid #22c55e;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#86efac;min-width:60px;font-size:12px;">正确答案</span><span style="color:#86efac;font-size:14px;line-height:1.6;">(0, 2)</span></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#cbd5e1;min-width:60px;font-size:12px;">B</span><span style="color:#cbd5e1;font-size:14px;line-height:1.6;">(-∞, 0)</span></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#cbd5e1;min-width:60px;font-size:12px;">C</span><span style="color:#cbd5e1;font-size:14px;line-height:1.6;">(2, +∞)</span></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#cbd5e1;min-width:60px;font-size:12px;">D</span><span style="color:#cbd5e1;font-size:14px;line-height:1.6;">(-∞, 0) ∪ (2, +∞)</span></div></div></div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">解析（83字）</div>
+      <div style="font-size:14px;color:#cbd5e1;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #fbbf24;">先求导：f'(x)=3x^2-6x=3x(x-2)。令 f'(x)<0，即 3x(x-2)<0，解得 0<x<2。因此函数 f(x) 的单调递减区间为 (0, 2)。</div>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;"><div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">其他字段</div><div style="display:flex;flex-wrap:wrap;gap:6px;"><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">schema_version: <span style="color:#cbd5e1;">2.0</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">type: <span style="color:#cbd5e1;">single_choice</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">analysis: <span style="color:#cbd5e1;">易错点：1. 误将 f'(x)>0 的解集当作递减区间；2. 将单调递减区间错误...</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">points: <span style="color:#cbd5e1;">1</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">difficulty: <span style="color:#cbd5e1;">3</span></span></div></div></div></div>
+        </div>
+        <div>
+          <div style="text-align:center;padding:8px;background:#14532d;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:#86efac;">优化后 · total=325</div>
+          
+    <div style="background:#0f172a;border-radius:12px;border:1px solid #334155;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#60a5fa15;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="background:#60a5fa;color:#0f172a;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;">单项选择</span>
+          <span style="font-size:14px;font-weight:600;color:#e2e8f0;">优化后</span>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;">
+          prompt=194 · completion=131 · total=<strong style="color:#60a5fa;">325</strong>
+        </div>
+      </div>
+      <div style="padding:20px;">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">题干</div>
+          <div style="font-size:15px;color:#e2e8f0;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #60a5fa;">函数f(x)=x^3-3x的单调递减区间是？</div>
+        </div>
+    <div style="margin-bottom:16px;"><div style="font-size:12px;color:#64748b;margin-bottom:8px;font-weight:600;">选项</div><div style="display:flex;flex-direction:column;gap:8px;"><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#cbd5e1;min-width:60px;font-size:12px;">A</span><span style="color:#cbd5e1;font-size:14px;line-height:1.6;">(-∞,-1)</span></div><div style="padding:10px 14px;border-radius:8px;background:#14532d;border:1px solid #22c55e;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#86efac;min-width:60px;font-size:12px;">正确答案</span><span style="color:#86efac;font-size:14px;line-height:1.6;">(-1,1)</span></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#cbd5e1;min-width:60px;font-size:12px;">C</span><span style="color:#cbd5e1;font-size:14px;line-height:1.6;">(1,+∞)</span></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;"><span style="font-weight:700;color:#cbd5e1;min-width:60px;font-size:12px;">D</span><span style="color:#cbd5e1;font-size:14px;line-height:1.6;">(-∞,-1)∪(1,+∞)</span></div></div></div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">解析（56字）</div>
+      <div style="font-size:14px;color:#cbd5e1;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #fbbf24;">f'(x)=3x^2-3=3(x-1)(x+1)，令f'(x)<0得-1<x<1，故单调递减区间为(-1,1)。</div>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;"><div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">其他字段</div><div style="display:flex;flex-wrap:wrap;gap:6px;"><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">difficulty: <span style="color:#cbd5e1;">3</span></span></div></div></div></div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+
+  <div class="section">
+    <div class="section-title">难题·综合题展示</div>
+    <div class="section-desc">高难度综合题（积分综合计算，难度5）优化前后对比，含换元法+分部积分+有理函数分解多个知识点</div>
+    <div style="margin-bottom:30px;border:2px solid #f59e0b;border-radius:12px;padding:16px;background:#f59e0b08;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #334155;flex-wrap:wrap;gap:8px;">
+        <h3 style="font-size:17px;color:#fbbf24;margin:0;display:flex;align-items:center;gap:8px;">
+          <span style="background:#f59e0b;color:#0f172a;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:700;">难题</span>
+          高数-综合填空（积分综合计算，难度5）
+        </h3>
+        <span style="background:#22c55e20;color:#4ade80;padding:4px 12px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid #22c55e40;">节省 8957 tokens (68.7%)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div style="text-align:center;padding:8px;background:#7f1d1d;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:#fca5a5;">优化前 · total=13030 · 输出1059字</div>
+          
+    <div style="background:#0f172a;border-radius:12px;border:1px solid #334155;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#a78bfa15;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="background:#a78bfa;color:#0f172a;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;">填空挖空</span>
+          <span style="font-size:14px;font-weight:600;color:#e2e8f0;">优化前</span>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;">
+          prompt=414 · completion=12616 · total=<strong style="color:#a78bfa;">13030</strong>
+        </div>
+      </div>
+      <div style="padding:20px;">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">题干</div>
+          <div style="font-size:15px;color:#e2e8f0;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #a78bfa;">求不定积分 ∫ x^5 ln(x^2+1)/(x^2+1)^2 dx。令 t = x^2+1，则原积分可化为 1/2 ∫ ({{1}}) ln t dt。利用分部积分，∫ ln t dt = {{2}}，∫ ln t/t^2 dt = {{3}}，而 ∫ ln t/t dt = {{4}}。</div>
+        </div>
+        <div style="margin-bottom:16px;"><div style="font-size:12px;color:#64748b;margin-bottom:8px;font-weight:600;">填空答案</div><div style="display:flex;flex-direction:column;gap:8px;">
+    <div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空1</span><span style="color:#86efac;font-size:14px;font-weight:600;">1 - 2/t + 1/t^2</span></div><div style="font-size:12px;color:#94a3b8;margin-left:4px;">提示：将 (t-1)^2/t^2 展开并拆分</div></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空2</span><span style="color:#86efac;font-size:14px;font-weight:600;">t ln t - t</span></div><div style="font-size:12px;color:#94a3b8;margin-left:4px;">提示：使用分部积分，u=ln t, dv=dt</div></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空3</span><span style="color:#86efac;font-size:14px;font-weight:600;">- (ln t)/t - 1/t</span></div><div style="font-size:12px;color:#94a3b8;margin-left:4px;">提示：使用分部积分，u=ln t, dv=t^{-2}dt</div></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空4</span><span style="color:#86efac;font-size:14px;font-weight:600;">1/2 (ln t)^2</span></div><div style="font-size:12px;color:#94a3b8;margin-left:4px;">提示：凑微分，因为 d(ln t)=dt/t</div></div></div></div><div style="margin-bottom:16px;padding:10px 14px;border-radius:8px;background:#14532d;border:1px solid #22c55e;"><span style="font-size:12px;color:#86efac;font-weight:600;">correct_answer: </span><span style="color:#86efac;font-size:14px;">["1 - 2/t + 1/t^2", "t ln t - t", "- (ln t)/t - 1/t", "1/2 (ln t)^2"]</span></div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">解析（373字）</div>
+      <div style="font-size:14px;color:#cbd5e1;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #fbbf24;white-space:pre-wrap;">令 t=x^2+1，则 dt=2x dx，x^5 dx=x^4·x dx=(t-1)^2·(1/2)dt。
+原积分 I=∫ x^5 ln(x^2+1)/(x^2+1)^2 dx = 1/2∫((t-1)^2/t^2)ln t dt = 1/2∫(1-2/t+1/t^2)ln t dt。
+分别计算：∫ln t dt=t ln t-t+C；∫ln t/t^2 dt=-(ln t)/t-1/t+C；∫ln t/t dt=1/2(ln t)^2+C。
+因此 I=1/2[t ln t-t-(ln t)^2-(ln t)/t-1/t]+C。
+代回 t=x^2+1，得最终结果：I=1/2(x^2+1)ln(x^2+1)-1/2(x^2+1)-1/2[ln(x^2+1)]^2-(ln(x^2+1))/(2(x^2+1))-1/(2(x^2+1))+C。</div>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;"><div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">其他字段</div><div style="display:flex;flex-wrap:wrap;gap:6px;"><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">schema_version: <span style="color:#cbd5e1;">2.0</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">type: <span style="color:#cbd5e1;">fill_cloze</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">points: <span style="color:#cbd5e1;">5</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">difficulty: <span style="color:#cbd5e1;">5</span></span></div></div></div></div>
+        </div>
+        <div>
+          <div style="text-align:center;padding:8px;background:#14532d;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:#86efac;">优化后 · total=4073 · 输出706字</div>
+          
+    <div style="background:#0f172a;border-radius:12px;border:1px solid #334155;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#a78bfa15;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="background:#a78bfa;color:#0f172a;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;">填空挖空</span>
+          <span style="font-size:14px;font-weight:600;color:#e2e8f0;">优化后</span>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;">
+          prompt=274 · completion=3799 · total=<strong style="color:#a78bfa;">4073</strong>
+        </div>
+      </div>
+      <div style="padding:20px;">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">题干</div>
+          <div style="font-size:15px;color:#e2e8f0;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #a78bfa;">计算不定积分 I = ∫ e^{2x} ln(e^x+1) dx。令 t=e^x，则 I = ∫ {{1}} dt；分部积分得 I = {{2}} - (1/2)∫ t^2/(t+1) dt；由有理函数分解 t^2/(t+1) = {{3}}，最终 I = {{4}}。</div>
+        </div>
+        <div style="margin-bottom:16px;"><div style="font-size:12px;color:#64748b;margin-bottom:8px;font-weight:600;">填空答案</div><div style="display:flex;flex-direction:column;gap:8px;">
+    <div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空1</span><span style="color:#86efac;font-size:14px;font-weight:600;">t ln(t+1)</span></div><div style="font-size:12px;color:#94a3b8;margin-left:4px;">提示：换元后注意 dx = dt/t，e^{2x}=t^2</div></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空2</span><span style="color:#86efac;font-size:14px;font-weight:600;">(t^2/2) ln(t+1)</span></div><div style="font-size:12px;color:#94a3b8;margin-left:4px;">提示：取 u=ln(t+1)，dv=t dt</div></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空3</span><span style="color:#86efac;font-size:14px;font-weight:600;">t - 1 + 1/(t+1)</span></div><div style="font-size:12px;color:#94a3b8;margin-left:4px;">提示：用多项式除法或凑项分解</div></div><div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空4</span><span style="color:#86efac;font-size:14px;font-weight:600;">((e^{2x}-1)/2) ln(e^x+1) - e^{2x}/4 + e^x/2 + C</span></div><div style="font-size:12px;color:#94a3b8;margin-left:4px;">提示：代回 t=e^x 并合并 ln 项</div></div></div></div><div style="margin-bottom:16px;padding:10px 14px;border-radius:8px;background:#14532d;border:1px solid #22c55e;"><span style="font-size:12px;color:#86efac;font-weight:600;">correct_answer: </span><span style="color:#86efac;font-size:14px;">["t ln(t+1)", "(t^2/2) ln(t+1)", "t - 1 + 1/(t+1)", "((e^{2x}-1)/2) ln(e^x+1) - e^{2x}/4 + e^x/2 + C"]</span></div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">解析（113字）</div>
+      <div style="font-size:14px;color:#cbd5e1;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #fbbf24;white-space:pre-wrap;">令 t=e^x 后化为 ∫ t ln(t+1) dt；分部积分得 (t^2/2)ln(t+1) - (1/2)∫ t^2/(t+1) dt；因 t^2/(t+1)=t-1+1/(t+1)，积分后代回 t=e^x，合并即得结果。</div>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;"><div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">其他字段</div><div style="display:flex;flex-wrap:wrap;gap:6px;"><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">difficulty: <span style="color:#cbd5e1;">5</span></span></div></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Actual AI Output Comparison -->
+  <div class="section">
+    <div class="section-title">实际 AI 输出对比（真实调用数据）</div>
+    <div class="section-desc">使用优化前后的 prompt 实际调用 AI 模型，对比输出内容和 token 消耗</div>
+
+    <div id="actual-output-container"></div>
+
+    <div class="optimization-notes" style="margin-top:20px; border-left-color: #fb923c;">
+      <h4 style="color:#fb923c">关键发现：输出 Token 控制与输入 Token 优化同等重要</h4>
+      <ul>
+        <li>优化后的 prompt 确实降低了 <strong>prompt_tokens（输入）</strong>：单选 214→186，填空 340→242</li>
+        <li>但 <strong>completion_tokens（输出）</strong> 可能因模型行为差异而波动，甚至反增（填空 265→1306，含模型 reasoning token）</li>
+        <li>因此 prompt 优化必须同时控制<strong>输出格式</strong>（紧凑JSON）和<strong>输出长度</strong>（explanation≤80字）</li>
+        <li>System prompt 支持模型端缓存（优化前填空调用已命中 cached_tokens=256），连续同场景调用时实际输入成本更低</li>
+        <li>结论：结构优化方向正确，但需要在真实业务中多次采样取平均值，并严格约束输出长度</li>
+      </ul>
+    </div>
+  </div>
+
+
+  <!-- Detailed Question Display -->
+  <div class="section">
+    <div class="section-title">详细题目内容展示</div>
+    <div class="section-desc">优化前后 AI 生成的完整题目，含题干、选项/填空、答案、解析、字段信息</div>
+
+    <div style="margin-bottom:30px;">
+      <h3 style="font-size:17px;color:#f1f5f9;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #334155;">单项选择（知识点：队列）</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div style="text-align:center;padding:8px;background:#7f1d1d;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:#fca5a5;">优化前</div>
+          
+    <div style="background:#0f172a;border-radius:12px;border:1px solid #334155;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#60a5fa15;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="background:#60a5fa;color:#0f172a;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;">单项选择</span>
+          <span style="font-size:14px;font-weight:600;color:#e2e8f0;">优化前</span>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;">
+          prompt=214 · completion=190 · total=<strong style="color:#60a5fa;">404</strong>
+        </div>
+      </div>
+
+      <div style="padding:20px;">
+        <!-- 题干 -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">📝 题干</div>
+          <div style="font-size:15px;color:#e2e8f0;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #60a5fa;">在队列中，元素的插入和删除操作分别发生在哪一端？</div>
+        </div>
+    
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:8px;font-weight:600;">🔘 选项</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+        
+            <div style="padding:10px 14px;border-radius:8px;background:#14532d;border:1px solid #22c55e;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-weight:700;color:#86efac;min-width:24px;">✅</span>
+              <span style="color:#86efac;font-size:14px;line-height:1.6;">插入在队尾，删除在队头</span>
+            </div>
+            
+            <div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-weight:700;color:#cbd5e1;min-width:24px;">B.</span>
+              <span style="color:#cbd5e1;font-size:14px;line-height:1.6;">插入在队头，删除在队尾</span>
+            </div>
+            
+            <div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-weight:700;color:#cbd5e1;min-width:24px;">C.</span>
+              <span style="color:#cbd5e1;font-size:14px;line-height:1.6;">插入和删除都在队头</span>
+            </div>
+            
+            <div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-weight:700;color:#cbd5e1;min-width:24px;">D.</span>
+              <span style="color:#cbd5e1;font-size:14px;line-height:1.6;">插入和删除都在队尾</span>
+            </div>
+            </div></div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">💬 解析（53字）</div>
+      <div style="font-size:14px;color:#cbd5e1;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #fbbf24;">队列是先进先出（FIFO）结构，新元素只能从队尾入队，删除操作只能从队头出队，因此插入在队尾，删除在队头。</div>
+    </div>
+    
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">📋 其他字段</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">schema_version: <span style="color:#cbd5e1;">2.0</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">type: <span style="color:#cbd5e1;">single_choice</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">analysis: <span style="color:#cbd5e1;">易混淆为栈的LIFO规则，注意队列两端操作不同。</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">points: <span style="color:#cbd5e1;">1</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">difficulty: <span style="color:#cbd5e1;">3</span></span></div></div></div></div>
+        </div>
+        <div>
+          <div style="text-align:center;padding:8px;background:#14532d;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:#86efac;">优化后</div>
+          
+    <div style="background:#0f172a;border-radius:12px;border:1px solid #334155;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#60a5fa15;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="background:#60a5fa;color:#0f172a;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;">单项选择</span>
+          <span style="font-size:14px;font-weight:600;color:#e2e8f0;">优化后</span>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;">
+          prompt=186 · completion=421 · total=<strong style="color:#60a5fa;">607</strong>
+        </div>
+      </div>
+
+      <div style="padding:20px;">
+        <!-- 题干 -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">📝 题干</div>
+          <div style="font-size:15px;color:#e2e8f0;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #60a5fa;">在循环队列中，若队尾指针rear指向队尾元素，队头指针front指向队头元素的下一个位置，则队列中元素个数的计算公式为？</div>
+        </div>
+    
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:8px;font-weight:600;">🔘 选项</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+        
+            <div style="padding:10px 14px;border-radius:8px;background:#14532d;border:1px solid #22c55e;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-weight:700;color:#86efac;min-width:24px;">✅</span>
+              <span style="color:#86efac;font-size:14px;line-height:1.6;">(rear-front+maxSize)%maxSize</span>
+            </div>
+            
+            <div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-weight:700;color:#cbd5e1;min-width:24px;">B.</span>
+              <span style="color:#cbd5e1;font-size:14px;line-height:1.6;">(front-rear+maxSize)%maxSize</span>
+            </div>
+            
+            <div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-weight:700;color:#cbd5e1;min-width:24px;">C.</span>
+              <span style="color:#cbd5e1;font-size:14px;line-height:1.6;">(rear-front)%maxSize</span>
+            </div>
+            
+            <div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-weight:700;color:#cbd5e1;min-width:24px;">D.</span>
+              <span style="color:#cbd5e1;font-size:14px;line-height:1.6;">(front-rear)%maxSize</span>
+            </div>
+            </div></div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">💬 解析（45字）</div>
+      <div style="font-size:14px;color:#cbd5e1;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #fbbf24;">循环队列元素个数=(rear-front+maxSize)%maxSize，确保结果非负。</div>
+    </div>
+    
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">📋 其他字段</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">difficulty: <span style="color:#cbd5e1;">3</span></span></div></div></div></div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="margin-bottom:30px;">
+      <h3 style="font-size:17px;color:#f1f5f9;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #334155;">填空挖空（知识点：二叉树遍历）</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div style="text-align:center;padding:8px;background:#7f1d1d;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:#fca5a5;">优化前</div>
+          
+    <div style="background:#0f172a;border-radius:12px;border:1px solid #334155;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#a78bfa15;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="background:#a78bfa;color:#0f172a;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;">填空挖空</span>
+          <span style="font-size:14px;font-weight:600;color:#e2e8f0;">优化前</span>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;">
+          prompt=340 · completion=265 · total=<strong style="color:#a78bfa;">605</strong>
+        </div>
+      </div>
+
+      <div style="padding:20px;">
+        <!-- 题干 -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">📝 题干</div>
+          <div style="font-size:15px;color:#e2e8f0;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #a78bfa;">二叉树的前序遍历顺序是{{1}}，中序遍历顺序是{{2}}，后序遍历顺序是{{3}}</div>
+        </div>
+    
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:8px;font-weight:600;">✏️ 填空答案</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+        
+            <div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空1</span>
+                <span style="color:#86efac;font-size:14px;font-weight:600;">根左右</span>
+              </div>
+              <div style="font-size:12px;color:#94a3b8;margin-left:4px;">💡 提示：先访问根节点</div></div>
+            <div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空2</span>
+                <span style="color:#86efac;font-size:14px;font-weight:600;">左根右</span>
+              </div>
+              <div style="font-size:12px;color:#94a3b8;margin-left:4px;">💡 提示：根节点在中间访问</div></div>
+            <div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空3</span>
+                <span style="color:#86efac;font-size:14px;font-weight:600;">左右根</span>
+              </div>
+              <div style="font-size:12px;color:#94a3b8;margin-left:4px;">💡 提示：最后访问根节点</div></div></div></div>
+            <div style="margin-bottom:16px;padding:10px 14px;border-radius:8px;background:#14532d;border:1px solid #22c55e;">
+              <span style="font-size:12px;color:#86efac;font-weight:600;">✅ correct_answer: </span>
+              <span style="color:#86efac;font-size:14px;">["根左右", "左根右", "左右根"]</span>
+            </div>
+            
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">💬 解析（71字）</div>
+      <div style="font-size:14px;color:#cbd5e1;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #fbbf24;">前序遍历先访问根节点，再遍历左子树和右子树；中序遍历先遍历左子树，再访问根节点，最后遍历右子树；后序遍历先遍历左子树和右子树，最后访问根节点。</div>
+    </div>
+    
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">📋 其他字段</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">schema_version: <span style="color:#cbd5e1;">2.0</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">type: <span style="color:#cbd5e1;">fill_cloze</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">points: <span style="color:#cbd5e1;">2</span></span><span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">difficulty: <span style="color:#cbd5e1;">3</span></span></div></div></div></div>
+        </div>
+        <div>
+          <div style="text-align:center;padding:8px;background:#14532d;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:#86efac;">优化后</div>
+          
+    <div style="background:#0f172a;border-radius:12px;border:1px solid #334155;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#a78bfa15;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="background:#a78bfa;color:#0f172a;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;">填空挖空</span>
+          <span style="font-size:14px;font-weight:600;color:#e2e8f0;">优化后</span>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;">
+          prompt=242 · completion=1306 · total=<strong style="color:#a78bfa;">1548</strong>
+        </div>
+      </div>
+
+      <div style="padding:20px;">
+        <!-- 题干 -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">📝 题干</div>
+          <div style="font-size:15px;color:#e2e8f0;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #a78bfa;">已知某二叉树的中序遍历序列为DBACE，后序遍历序列为DBECA，则其前序遍历序列为{{1}}，该二叉树的根节点为{{2}}。</div>
+        </div>
+    
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:8px;font-weight:600;">✏️ 填空答案</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+        
+            <div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空1</span>
+                <span style="color:#86efac;font-size:14px;font-weight:600;">ABDCE</span>
+              </div>
+              <div style="font-size:12px;color:#94a3b8;margin-left:4px;">💡 提示：前序序列以根节点开始</div></div>
+            <div style="padding:10px 14px;border-radius:8px;background:#1e293b;border:1px solid #334155;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span style="background:#a78bfa;color:#0f172a;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700;">空2</span>
+                <span style="color:#86efac;font-size:14px;font-weight:600;">A</span>
+              </div>
+              <div style="font-size:12px;color:#94a3b8;margin-left:4px;">💡 提示：后序序列的最后一个节点是根节点</div></div></div></div>
+            <div style="margin-bottom:16px;padding:10px 14px;border-radius:8px;background:#14532d;border:1px solid #22c55e;">
+              <span style="font-size:12px;color:#86efac;font-weight:600;">✅ correct_answer: </span>
+              <span style="color:#86efac;font-size:14px;">["ABDCE", "A"]</span>
+            </div>
+            
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">💬 解析（76字）</div>
+      <div style="font-size:14px;color:#cbd5e1;line-height:1.7;background:#1e293b;padding:12px 16px;border-radius:8px;border-left:3px solid #fbbf24;">后序序列DBECA的最后一个节点A为根，中序序列DBACE中A左侧DB为左子树，右侧CE为右子树；后序中左子树为DB，右子树为EC，故前序为ABDCE。</div>
+    </div>
+    
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:6px;font-weight:600;">📋 其他字段</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span style="background:#1e293b;border:1px solid #334155;padding:3px 10px;border-radius:4px;font-size:12px;color:#94a3b8;">difficulty: <span style="color:#cbd5e1;">3</span></span></div></div></div></div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+<!-- Impact Analysis -->
+  <div class="section">
+    <div class="section-title">实际影响估算</div>
+    <div class="section-desc">按典型使用场景量化年度 Token 节省量</div>
+    <table class="struct-table">
+      <thead>
+        <tr>
+          <th>场景</th>
+          <th>单次节省</th>
+          <th>日均调用（估）</th>
+          <th>日节省</th>
+          <th>月节省（30天）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>课堂交互（系统提示词）</td>
+          <td>319.0 tokens</td>
+          <td>50 次</td>
+          <td>15,950</td>
+          <td><strong>478,500</strong></td>
+        </tr>
+        <tr>
+          <td>出题（单选/多选/判断等）</td>
+          <td>~80 tokens（均值）</td>
+          <td>20 次</td>
+          <td>1,600</td>
+          <td><strong>48,000</strong></td>
+        </tr>
+        <tr>
+          <td>出题（填空/背诵等长题型）</td>
+          <td>~150 tokens（均值）</td>
+          <td>10 次</td>
+          <td>1,500</td>
+          <td><strong>45,000</strong></td>
+        </tr>
+        <tr style="background:#0f172a">
+          <td><strong>合计</strong></td>
+          <td>—</td>
+          <td>80 次</td>
+          <td><strong>19,050</strong></td>
+          <td><strong style="color:#4ade80">~571,500 tokens/月</strong></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="optimization-notes" style="margin-top:16px">
+      <h4>额外收益（非 Token 层面）</h4>
+      <ul>
+        <li>System prompt 支持模型端缓存（如 OpenAI Prompt Caching / DeepSeek Cache），连续同场景调用时 system 部分近乎免费，实际节省可能高于 55%</li>
+        <li>结构化分区降低 AI 指令混淆概率，输出格式准确率提升（减少 JSON 解析失败重试的二次消耗）</li>
+        <li>静态规则与动态参数分离，后续修改参数不触碰规则，维护成本降低</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Next Steps -->
+  <div class="section">
+    <div class="section-title">后续可扩展优化方向</div>
+    <div class="section-desc">本项目已覆盖 3 个核心场景，以下方向可继续深化</div>
+    <div class="overview" style="grid-template-columns: repeat(3, 1fr); margin-bottom:0">
+      <div class="stat-card" style="text-align:left">
+        <div class="label" style="color:#60a5fa">方向 1</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">消息历史优化</div>
+        <div style="font-size:12px;color:#94a3b8">历史消息截断（>300字摘要）、条数从8减至6、题目类消息去除内部字段</div>
+      </div>
+      <div class="stat-card" style="text-align:left">
+        <div class="label" style="color:#a78bfa">方向 2</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">全场景覆盖</div>
+        <div style="font-size:12px;color:#94a3b8">planner（计划生成）、sediment（沉淀）、knowledge_refine（知识点细化）、handwrite_grading（手写判卷）</div>
+      </div>
+      <div class="stat-card" style="text-align:left">
+        <div class="label" style="color:#4ade80">方向 3</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">数据结构瘦身</div>
+        <div style="font-size:12px;color:#94a3b8">AI 交互格式去除 generation_meta、ai_* 内部跟踪字段，响应只保留渲染必需字段</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>提示词结构优化方案 · 独立演示项目 · Token 数为估算值（中文×1.3 + 英文词×1.0 + 其他×0.3）</p>
+    <p style="margin-top:4px">项目路径：C:\creategame\AI学\prompt-optimization-demo</p>
+  </div>
+
+</div>
+
+<script>
+const AI_OUTPUTS = {
+  "quiz_single_choice": {
+    "scenario_id": "quiz_single_choice",
+    "label": "出题-单项选择（知识点：队列）",
+    "before": {
+      "prompt": "[只有 user prompt，无 system]\n\n为知识点「队列」生成一道单项选择题。\n返回严格 JSON（不要任何其他文字、不要代码块），必须包含 schema_version 和 type 字段。\nJSON 格式：{\"schema_version\":\"2.0\",\"type\":\"single_choice\",\"question\":\"题干\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"correct_answer\":1,\"explanation\":\"解析（讲清为什么，80字内）\",\"analysis\":\"易错点提示（可选）\",\"points\":1,\"difficulty\":3}\n要求：options 给 4 个；correct_answer 为正确选项的索引（0-based 整数）；题干清晰。",
+      "messages": [
+        {
+          "role": "user",
+          "content": "为知识点「队列」生成一道单项选择题。\n返回严格 JSON（不要任何其他文字、不要代码块），必须包含 schema_version 和 type 字段。\nJSON 格式：{\"schema_version\":\"2.0\",\"type\":\"single_choice\",\"question\":\"题干\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"correct_answer\":1,\"explanation\":\"解析（讲清为什么，80字内）\",\"analysis\":\"易错点提示（可选）\",\"points\":1,\"difficulty\":3}\n要求：options 给 4 个；correct_answer 为正确选项的索引（0-based 整数）；题干清晰。"
+        }
+      ],
+      "output": "{\"schema_version\":\"2.0\",\"type\":\"single_choice\",\"question\":\"在队列中，元素的插入和删除操作分别发生在哪一端？\",\"options\":[\"插入在队尾，删除在队头\",\"插入在队头，删除在队尾\",\"插入和删除都在队头\",\"插入和删除都在队尾\"],\"correct_answer\":0,\"explanation\":\"队列是先进先出（FIFO）结构，新元素只能从队尾入队，删除操作只能从队头出队，因此插入在队尾，删除在队头。\",\"analysis\":\"易混淆为栈的LIFO规则，注意队列两端操作不同。\",\"points\":1,\"difficulty\":3}",
+      "usage": {
+        "prompt_tokens": 214,
+        "completion_tokens": 190,
+        "total_tokens": 404,
+        "prompt_tokens_details": {}
+      }
+    },
+    "after": {
+      "prompt": "[system]\n你是出题引擎。输出严格JSON，不要其他文字或代码块。输出紧凑JSON（单行，无缩进无换行）。\n\n字段定义：\n- question: string 题干\n- options: string[4] 四个选项\n- correct_answer: int 正确选项索引(0-3)\n- explanation: string 解析(≤80字)\n- difficulty: int 难度(1-5)\n\n[user]\n{\"knowledge\":\"队列\",\"type\":\"single_choice\",\"difficulty\":3}",
+      "messages": [
+        {
+          "role": "system",
+          "content": "你是出题引擎。输出严格JSON，不要其他文字或代码块。输出紧凑JSON（单行，无缩进无换行）。\n\n字段定义：\n- question: string 题干\n- options: string[4] 四个选项\n- correct_answer: int 正确选项索引(0-3)\n- explanation: string 解析(≤80字)\n- difficulty: int 难度(1-5)"
+        },
+        {
+          "role": "user",
+          "content": "{\"knowledge\":\"队列\",\"type\":\"single_choice\",\"difficulty\":3}"
+        }
+      ],
+      "output": "{\"question\":\"在循环队列中，若队尾指针rear指向队尾元素，队头指针front指向队头元素的下一个位置，则队列中元素个数的计算公式为？\",\"options\":[\"(rear-front+maxSize)%maxSize\",\"(front-rear+maxSize)%maxSize\",\"(rear-front)%maxSize\",\"(front-rear)%maxSize\"],\"correct_answer\":0,\"explanation\":\"循环队列元素个数=(rear-front+maxSize)%maxSize，确保结果非负。\",\"difficulty\":3}",
+      "usage": {
+        "prompt_tokens": 186,
+        "completion_tokens": 421,
+        "total_tokens": 607,
+        "prompt_tokens_details": {}
+      }
+    }
+  },
+  "quiz_fill_cloze": {
+    "scenario_id": "quiz_fill_cloze",
+    "label": "出题-填空挖空（知识点：二叉树遍历）",
+    "before": {
+      "prompt": "[只有 user prompt，无 system]\n\n为知识点「二叉树遍历」生成一道填空题。\n返回严格 JSON（不要任何其他文字、不要代码块），必须包含 schema_version 和 type 字段。\nJSON 格式：{\"schema_version\":\"2.0\",\"type\":\"fill_cloze\",\"question\":\"题干中用 {{1}}{{2}} 标记挖空位置，例如：二叉树的层序遍历使用{{1}}实现，时间复杂度为{{2}}\",\"blanks\":[{\"id\":1,\"answer\":\"队列\",\"hint\":\"FIFO数据结构（可选）\"},{\"id\":2,\"answer\":\"O(n)\",\"hint\":null}],\"correct_answer\":[\"队列\",\"O(n)\"],\"explanation\":\"解析\",\"points\":2,\"difficulty\":3}\n要求：\n- 你（AI）决定在哪里挖空，用 {{数字}} 占位符标记，数字从 1 开始连续编号\n- 挖 2-3 个空，每个空对应一个核心知识点\n- blanks 数组中每个元素的 id 与题干占位符数字对应，answer 是该空的标准答案\n- hint 是给学生的提示（可选，没有则 null）\n- correct_answer 是答案数组，顺序与 blanks 一致\n- 题干中不要出现答案本身",
+      "messages": [
+        {
+          "role": "user",
+          "content": "为知识点「二叉树遍历」生成一道填空题。\n返回严格 JSON（不要任何其他文字、不要代码块），必须包含 schema_version 和 type 字段。\nJSON 格式：{\"schema_version\":\"2.0\",\"type\":\"fill_cloze\",\"question\":\"题干中用 {{1}}{{2}} 标记挖空位置，例如：二叉树的层序遍历使用{{1}}实现，时间复杂度为{{2}}\",\"blanks\":[{\"id\":1,\"answer\":\"队列\",\"hint\":\"FIFO数据结构（可选）\"},{\"id\":2,\"answer\":\"O(n)\",\"hint\":null}],\"correct_answer\":[\"队列\",\"O(n)\"],\"explanation\":\"解析\",\"points\":2,\"difficulty\":3}\n要求：\n- 你（AI）决定在哪里挖空，用 {{数字}} 占位符标记，数字从 1 开始连续编号\n- 挖 2-3 个空，每个空对应一个核心知识点\n- blanks 数组中每个元素的 id 与题干占位符数字对应，answer 是该空的标准答案\n- hint 是给学生的提示（可选，没有则 null）\n- correct_answer 是答案数组，顺序与 blanks 一致\n- 题干中不要出现答案本身"
+        }
+      ],
+      "output": "{\"schema_version\":\"2.0\",\"type\":\"fill_cloze\",\"question\":\"二叉树的前序遍历顺序是{{1}}，中序遍历顺序是{{2}}，后序遍历顺序是{{3}}\",\"blanks\":[{\"id\":1,\"answer\":\"根左右\",\"hint\":\"先访问根节点\"},{\"id\":2,\"answer\":\"左根右\",\"hint\":\"根节点在中间访问\"},{\"id\":3,\"answer\":\"左右根\",\"hint\":\"最后访问根节点\"}],\"correct_answer\":[\"根左右\",\"左根右\",\"左右根\"],\"explanation\":\"前序遍历先访问根节点，再遍历左子树和右子树；中序遍历先遍历左子树，再访问根节点，最后遍历右子树；后序遍历先遍历左子树和右子树，最后访问根节点。\",\"points\":2,\"difficulty\":3}",
+      "usage": {
+        "prompt_tokens": 340,
+        "completion_tokens": 265,
+        "total_tokens": 605,
+        "prompt_tokens_details": {
+          "cached_tokens": 256
+        }
+      }
+    },
+    "after": {
+      "prompt": "[system]\n你是出题引擎。输出严格JSON，不要其他文字或代码块。输出紧凑JSON（单行，无缩进无换行）。\n\n字段定义：\n- question: string 题干，用 {{1}}{{2}} 标记挖空位\n- blanks: object[] 每个含 id(int)对应占位符, answer(string)标准答案, hint(string|null)提示\n- correct_answer: string[] 答案数组，顺序与blanks一致\n- explanation: string 解析(≤80字)\n- difficulty: int 难度(1-5)\n\n挖空规则：AI决定位置，2-3空，每空对应核心知识点，题干不出现答案。\n\n[user]\n{\"knowledge\":\"二叉树遍历\",\"type\":\"fill_cloze\",\"difficulty\":3}",
+      "messages": [
+        {
+          "role": "system",
+          "content": "你是出题引擎。输出严格JSON，不要其他文字或代码块。输出紧凑JSON（单行，无缩进无换行）。\n\n字段定义：\n- question: string 题干，用 {{1}}{{2}} 标记挖空位\n- blanks: object[] 每个含 id(int)对应占位符, answer(string)标准答案, hint(string|null)提示\n- correct_answer: string[] 答案数组，顺序与blanks一致\n- explanation: string 解析(≤80字)\n- difficulty: int 难度(1-5)\n\n挖空规则：AI决定位置，2-3空，每空对应核心知识点，题干不出现答案。"
+        },
+        {
+          "role": "user",
+          "content": "{\"knowledge\":\"二叉树遍历\",\"type\":\"fill_cloze\",\"difficulty\":3}"
+        }
+      ],
+      "output": "{\"question\":\"已知某二叉树的中序遍历序列为DBACE，后序遍历序列为DBECA，则其前序遍历序列为{{1}}，该二叉树的根节点为{{2}}。\",\"blanks\":[{\"id\":1,\"answer\":\"ABDCE\",\"hint\":\"前序序列以根节点开始\"},{\"id\":2,\"answer\":\"A\",\"hint\":\"后序序列的最后一个节点是根节点\"}],\"correct_answer\":[\"ABDCE\",\"A\"],\"explanation\":\"后序序列DBECA的最后一个节点A为根，中序序列DBACE中A左侧DB为左子树，右侧CE为右子树；后序中左子树为DB，右子树为EC，故前序为ABDCE。\",\"difficulty\":3}",
+      "usage": {
+        "prompt_tokens": 242,
+        "completion_tokens": 1306,
+        "total_tokens": 1548,
+        "prompt_tokens_details": {}
+      }
+    }
+  }
+};
+
+// 加载 prompt 文件内容
+async function loadPrompt(id, file) {
+  try {
+    const resp = await fetch('prompts/' + file);
+    const text = await resp.text();
+    document.getElementById(id).textContent = text;
+  } catch(e) {
+    document.getElementById(id).textContent = '（请通过本地服务器打开此页面以加载 prompt 文件）';
+  }
+}
+loadPrompt('before-classroom', 'before_classroom_system.txt');
+loadPrompt('after-classroom', 'after_classroom_system.txt');
+loadPrompt('before-quiz-sc', 'before_quiz_single_choice.txt');
+loadPrompt('after-quiz-sc', 'after_quiz_single_choice.txt');
+loadPrompt('before-quiz-fc', 'before_quiz_fill_cloze.txt');
+loadPrompt('after-quiz-fc', 'after_quiz_fill_cloze.txt');
+
+// 渲染实际 AI 输出对比
+function renderActualOutputs() {
+  const container = document.getElementById('actual-output-container');
+  if (!container || !window.AI_OUTPUTS) return;
+
+  const labels = {
+    'math_hard_integral': '高数-综合填空（积分综合计算，难度5）',
+    'math_limit': '高数-单选（极限计算）',
+    'math_integral': '高数-填空（不定积分）',
+    'math_derivative': '高数-单选（导数应用）',
+  
+  };
+
+  for (const [id, data] of Object.entries(AI_OUTPUTS)) {
+    const bu = data.before.usage || {};
+    const au = data.after.usage || {};
+    const bt = bu.total_tokens || 0;
+    const at = au.total_tokens || 0;
+    const savings = bt - at;
+    const pct = bt > 0 ? (savings / bt * 100).toFixed(1) : 0;
+    const savingsColor = savings >= 0 ? '#4ade80' : '#f87171';
+    const savingsText = savings >= 0 ? `节省 ${savings} tokens (${pct}%)` : `反增 ${Math.abs(savings)} tokens (${Math.abs(pct)}%)`;
+
+    const section = document.createElement('div');
+    section.style.marginBottom = '30px';
+    section.innerHTML = `
+      <div class="comparison-header">
+        <div>
+          <div class="comparison-title">${labels[id] || id}</div>
+          <div class="comparison-meta">真实调用 · ${data.before.messages.map(m=>m.role).join('+')} → ${data.after.messages.map(m=>m.role).join('+')}</div>
+        </div>
+        <div class="savings-badge" style="background: ${savings >= 0 ? 'linear-gradient(135deg, #22c55e, #16a34a)' : 'linear-gradient(135deg, #dc2626, #ef4444)'}">${savingsText}</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div style="background:#0f172a;border-radius:10px;padding:16px;border:1px solid #7f1d1d;">
+          <div style="color:#fca5a5;font-size:13px;font-weight:600;margin-bottom:10px;">优化前 · Token 消耗</div>
+          <div style="font-size:12px;color:#94a3b8;line-height:1.8;">
+            prompt_tokens: <span style="color:#e2e8f0;font-weight:600;">${bu.prompt_tokens || '-'}</span><br>
+            completion_tokens: <span style="color:#e2e8f0;font-weight:600;">${bu.completion_tokens || '-'}</span><br>
+            total_tokens: <span style="color:#fca5a5;font-weight:700;font-size:16px;">${bu.total_tokens || '-'}</span>
+            ${bu.prompt_tokens_details && bu.prompt_tokens_details.cached_tokens ? '<br><span style="color:#4ade80;">cached_tokens: ' + bu.prompt_tokens_details.cached_tokens + ' (命中缓存)</span>' : ''}
+          </div>
+        </div>
+        <div style="background:#0f172a;border-radius:10px;padding:16px;border:1px solid #14532d;">
+          <div style="color:#86efac;font-size:13px;font-weight:600;margin-bottom:10px;">优化后 · Token 消耗</div>
+          <div style="font-size:12px;color:#94a3b8;line-height:1.8;">
+            prompt_tokens: <span style="color:#e2e8f0;font-weight:600;">${au.prompt_tokens || '-'}</span><br>
+            completion_tokens: <span style="color:#e2e8f0;font-weight:600;">${au.completion_tokens || '-'}</span><br>
+            total_tokens: <span style="color:#86efac;font-weight:700;font-size:16px;">${au.total_tokens || '-'}</span>
+            ${au.prompt_tokens_details && au.prompt_tokens_details.cached_tokens ? '<br><span style="color:#4ade80;">cached_tokens: ' + au.prompt_tokens_details.cached_tokens + ' (命中缓存)</span>' : ''}
+          </div>
+        </div>
+      </div>
+
+      <div class="prompt-grid">
+        <div class="prompt-box before">
+          <div class="prompt-box-header">
+            <span>优化前 · AI 实际输出</span>
+            <span class="prompt-token">${(data.before.output||'').length} 字</span>
+          </div>
+          <div class="prompt-content" style="max-height:300px;">${escapeHtml(data.before.output || '(无输出)')}</div>
+        </div>
+        <div class="prompt-box after">
+          <div class="prompt-box-header">
+            <span>优化后 · AI 实际输出</span>
+            <span class="prompt-token">${(data.after.output||'').length} 字</span>
+          </div>
+          <div class="prompt-content" style="max-height:300px;">${escapeHtml(data.after.output || '(无输出)')}</div>
+        </div>
+      </div>
+    `;
+    container.appendChild(section);
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// 页面加载后渲染
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', renderActualOutputs);
+} else {
+  renderActualOutputs();
+}
+
+</script>
+</body>
+</html>

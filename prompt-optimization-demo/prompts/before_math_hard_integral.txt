@@ -1,0 +1,37 @@
+[只有 user prompt，无 system]
+你是一个专业的出题引擎，负责根据知识点生成高质量的练习题。
+
+请严格按照以下 JSON 格式输出，不要输出任何其他文字或代码块标记：
+
+{
+  "schema_version": "2.0",
+  "type": "fill_cloze",
+  "question": "题目内容，用{{1}}{{2}}标记挖空位置",
+  "blanks": [
+    {"id": 1, "answer": "答案1", "hint": "提示1"},
+    {"id": 2, "answer": "答案2", "hint": "提示2"}
+  ],
+  "correct_answer": ["答案1", "答案2"],
+  "explanation": "详细解析",
+  "points": 5,
+  "difficulty": 5
+}
+
+字段说明：
+- question: 题干，用{{数字}}标记挖空位置
+- blanks: 填空数组，每个包含id(对应占位符)、answer(标准答案)、hint(提示)
+- correct_answer: 答案数组，顺序与blanks一致
+- explanation: 详细的解题过程，包含每一步的推导
+- points: 分值
+- difficulty: 难度1-5
+
+挖空规则：
+- AI自行决定挖空位置，2-4个空
+- 每个空对应一个核心知识点或关键步骤
+- 题干中不能出现答案
+- 综合题应包含多个知识点的综合运用
+
+现在请根据以下参数生成题目：
+知识点：积分综合计算（换元法+分部积分+有理函数分解）
+题型：fill_cloze
+难度：5

@@ -1,0 +1,84 @@
+[
+  {
+    "scenario_id": "quiz_single_choice",
+    "label": "出题-单项选择（知识点：队列）",
+    "before": {
+      "prompt": "[只有 user prompt，无 system]\n\n为知识点「队列」生成一道单项选择题。\n返回严格 JSON（不要任何其他文字、不要代码块），必须包含 schema_version 和 type 字段。\nJSON 格式：{\"schema_version\":\"2.0\",\"type\":\"single_choice\",\"question\":\"题干\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"correct_answer\":1,\"explanation\":\"解析（讲清为什么，80字内）\",\"analysis\":\"易错点提示（可选）\",\"points\":1,\"difficulty\":3}\n要求：options 给 4 个；correct_answer 为正确选项的索引（0-based 整数）；题干清晰。",
+      "messages": [
+        {
+          "role": "user",
+          "content": "为知识点「队列」生成一道单项选择题。\n返回严格 JSON（不要任何其他文字、不要代码块），必须包含 schema_version 和 type 字段。\nJSON 格式：{\"schema_version\":\"2.0\",\"type\":\"single_choice\",\"question\":\"题干\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"correct_answer\":1,\"explanation\":\"解析（讲清为什么，80字内）\",\"analysis\":\"易错点提示（可选）\",\"points\":1,\"difficulty\":3}\n要求：options 给 4 个；correct_answer 为正确选项的索引（0-based 整数）；题干清晰。"
+        }
+      ],
+      "output": "{\"schema_version\":\"2.0\",\"type\":\"single_choice\",\"question\":\"在队列中，元素的插入和删除操作分别发生在哪一端？\",\"options\":[\"插入在队尾，删除在队头\",\"插入在队头，删除在队尾\",\"插入和删除都在队头\",\"插入和删除都在队尾\"],\"correct_answer\":0,\"explanation\":\"队列是先进先出（FIFO）结构，新元素只能从队尾入队，删除操作只能从队头出队，因此插入在队尾，删除在队头。\",\"analysis\":\"易混淆为栈的LIFO规则，注意队列两端操作不同。\",\"points\":1,\"difficulty\":3}",
+      "usage": {
+        "prompt_tokens": 214,
+        "completion_tokens": 190,
+        "total_tokens": 404,
+        "prompt_tokens_details": {}
+      }
+    },
+    "after": {
+      "prompt": "[system]\n你是出题引擎。输出严格JSON，不要其他文字或代码块。输出紧凑JSON（单行，无缩进无换行）。\n\n字段定义：\n- question: string 题干\n- options: string[4] 四个选项\n- correct_answer: int 正确选项索引(0-3)\n- explanation: string 解析(≤80字)\n- difficulty: int 难度(1-5)\n\n[user]\n{\"knowledge\":\"队列\",\"type\":\"single_choice\",\"difficulty\":3}",
+      "messages": [
+        {
+          "role": "system",
+          "content": "你是出题引擎。输出严格JSON，不要其他文字或代码块。输出紧凑JSON（单行，无缩进无换行）。\n\n字段定义：\n- question: string 题干\n- options: string[4] 四个选项\n- correct_answer: int 正确选项索引(0-3)\n- explanation: string 解析(≤80字)\n- difficulty: int 难度(1-5)"
+        },
+        {
+          "role": "user",
+          "content": "{\"knowledge\":\"队列\",\"type\":\"single_choice\",\"difficulty\":3}"
+        }
+      ],
+      "output": "{\"question\":\"在循环队列中，若队尾指针rear指向队尾元素，队头指针front指向队头元素的下一个位置，则队列中元素个数的计算公式为？\",\"options\":[\"(rear-front+maxSize)%maxSize\",\"(front-rear+maxSize)%maxSize\",\"(rear-front)%maxSize\",\"(front-rear)%maxSize\"],\"correct_answer\":0,\"explanation\":\"循环队列元素个数=(rear-front+maxSize)%maxSize，确保结果非负。\",\"difficulty\":3}",
+      "usage": {
+        "prompt_tokens": 186,
+        "completion_tokens": 421,
+        "total_tokens": 607,
+        "prompt_tokens_details": {}
+      }
+    }
+  },
+  {
+    "scenario_id": "quiz_fill_cloze",
+    "label": "出题-填空挖空（知识点：二叉树遍历）",
+    "before": {
+      "prompt": "[只有 user prompt，无 system]\n\n为知识点「二叉树遍历」生成一道填空题。\n返回严格 JSON（不要任何其他文字、不要代码块），必须包含 schema_version 和 type 字段。\nJSON 格式：{\"schema_version\":\"2.0\",\"type\":\"fill_cloze\",\"question\":\"题干中用 {{1}}{{2}} 标记挖空位置，例如：二叉树的层序遍历使用{{1}}实现，时间复杂度为{{2}}\",\"blanks\":[{\"id\":1,\"answer\":\"队列\",\"hint\":\"FIFO数据结构（可选）\"},{\"id\":2,\"answer\":\"O(n)\",\"hint\":null}],\"correct_answer\":[\"队列\",\"O(n)\"],\"explanation\":\"解析\",\"points\":2,\"difficulty\":3}\n要求：\n- 你（AI）决定在哪里挖空，用 {{数字}} 占位符标记，数字从 1 开始连续编号\n- 挖 2-3 个空，每个空对应一个核心知识点\n- blanks 数组中每个元素的 id 与题干占位符数字对应，answer 是该空的标准答案\n- hint 是给学生的提示（可选，没有则 null）\n- correct_answer 是答案数组，顺序与 blanks 一致\n- 题干中不要出现答案本身",
+      "messages": [
+        {
+          "role": "user",
+          "content": "为知识点「二叉树遍历」生成一道填空题。\n返回严格 JSON（不要任何其他文字、不要代码块），必须包含 schema_version 和 type 字段。\nJSON 格式：{\"schema_version\":\"2.0\",\"type\":\"fill_cloze\",\"question\":\"题干中用 {{1}}{{2}} 标记挖空位置，例如：二叉树的层序遍历使用{{1}}实现，时间复杂度为{{2}}\",\"blanks\":[{\"id\":1,\"answer\":\"队列\",\"hint\":\"FIFO数据结构（可选）\"},{\"id\":2,\"answer\":\"O(n)\",\"hint\":null}],\"correct_answer\":[\"队列\",\"O(n)\"],\"explanation\":\"解析\",\"points\":2,\"difficulty\":3}\n要求：\n- 你（AI）决定在哪里挖空，用 {{数字}} 占位符标记，数字从 1 开始连续编号\n- 挖 2-3 个空，每个空对应一个核心知识点\n- blanks 数组中每个元素的 id 与题干占位符数字对应，answer 是该空的标准答案\n- hint 是给学生的提示（可选，没有则 null）\n- correct_answer 是答案数组，顺序与 blanks 一致\n- 题干中不要出现答案本身"
+        }
+      ],
+      "output": "{\"schema_version\":\"2.0\",\"type\":\"fill_cloze\",\"question\":\"二叉树的前序遍历顺序是{{1}}，中序遍历顺序是{{2}}，后序遍历顺序是{{3}}\",\"blanks\":[{\"id\":1,\"answer\":\"根左右\",\"hint\":\"先访问根节点\"},{\"id\":2,\"answer\":\"左根右\",\"hint\":\"根节点在中间访问\"},{\"id\":3,\"answer\":\"左右根\",\"hint\":\"最后访问根节点\"}],\"correct_answer\":[\"根左右\",\"左根右\",\"左右根\"],\"explanation\":\"前序遍历先访问根节点，再遍历左子树和右子树；中序遍历先遍历左子树，再访问根节点，最后遍历右子树；后序遍历先遍历左子树和右子树，最后访问根节点。\",\"points\":2,\"difficulty\":3}",
+      "usage": {
+        "prompt_tokens": 340,
+        "completion_tokens": 265,
+        "total_tokens": 605,
+        "prompt_tokens_details": {
+          "cached_tokens": 256
+        }
+      }
+    },
+    "after": {
+      "prompt": "[system]\n你是出题引擎。输出严格JSON，不要其他文字或代码块。输出紧凑JSON（单行，无缩进无换行）。\n\n字段定义：\n- question: string 题干，用 {{1}}{{2}} 标记挖空位\n- blanks: object[] 每个含 id(int)对应占位符, answer(string)标准答案, hint(string|null)提示\n- correct_answer: string[] 答案数组，顺序与blanks一致\n- explanation: string 解析(≤80字)\n- difficulty: int 难度(1-5)\n\n挖空规则：AI决定位置，2-3空，每空对应核心知识点，题干不出现答案。\n\n[user]\n{\"knowledge\":\"二叉树遍历\",\"type\":\"fill_cloze\",\"difficulty\":3}",
+      "messages": [
+        {
+          "role": "system",
+          "content": "你是出题引擎。输出严格JSON，不要其他文字或代码块。输出紧凑JSON（单行，无缩进无换行）。\n\n字段定义：\n- question: string 题干，用 {{1}}{{2}} 标记挖空位\n- blanks: object[] 每个含 id(int)对应占位符, answer(string)标准答案, hint(string|null)提示\n- correct_answer: string[] 答案数组，顺序与blanks一致\n- explanation: string 解析(≤80字)\n- difficulty: int 难度(1-5)\n\n挖空规则：AI决定位置，2-3空，每空对应核心知识点，题干不出现答案。"
+        },
+        {
+          "role": "user",
+          "content": "{\"knowledge\":\"二叉树遍历\",\"type\":\"fill_cloze\",\"difficulty\":3}"
+        }
+      ],
+      "output": "{\"question\":\"已知某二叉树的中序遍历序列为DBACE，后序遍历序列为DBECA，则其前序遍历序列为{{1}}，该二叉树的根节点为{{2}}。\",\"blanks\":[{\"id\":1,\"answer\":\"ABDCE\",\"hint\":\"前序序列以根节点开始\"},{\"id\":2,\"answer\":\"A\",\"hint\":\"后序序列的最后一个节点是根节点\"}],\"correct_answer\":[\"ABDCE\",\"A\"],\"explanation\":\"后序序列DBECA的最后一个节点A为根，中序序列DBACE中A左侧DB为左子树，右侧CE为右子树；后序中左子树为DB，右子树为EC，故前序为ABDCE。\",\"difficulty\":3}",
+      "usage": {
+        "prompt_tokens": 242,
+        "completion_tokens": 1306,
+        "total_tokens": 1548,
+        "prompt_tokens_details": {}
+      }
+    }
+  }
+]

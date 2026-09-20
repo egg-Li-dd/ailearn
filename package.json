@@ -1,0 +1,12 @@
+{
+  "name": "ai-xue-app",
+  "version": "1.0.0",
+  "description": "AI学 - 智能学习助手",
+  "main": "prototype/chat.html",
+  "scripts": {
+    "build": "echo 'No build step needed'"
+  },
+  "keywords": ["ai", "education"],
+  "author": "",
+  "license": "MIT"
+}

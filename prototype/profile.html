@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ai学 · 我的界面原型</title>
+<link rel="stylesheet" href="design-tokens.css">
+<style>
+  .profile-content {
+    padding: 0 16px 100px;
+  }
+
+  /* 教练卡片 */
+  .coach-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--ai-tint) 100%);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 20px;
+    margin-top: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .coach-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(138,92,214,.08) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .coach-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .coach-avatar {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--ai) 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 600;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(62,99,221,.25);
+  }
+  .coach-info { flex: 1; }
+  .coach-name {
+    font-size: var(--fs-h2);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .coach-personality {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .coach-edit {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--bg-sunken);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+  .coach-daily {
+    background: var(--ai-weak);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    font-size: var(--fs-secondary);
+    color: var(--text-secondary);
+    line-height: var(--lh-secondary);
+    font-style: italic;
+    position: relative;
+  }
+  .coach-daily::before {
+    content: '"';
+    position: absolute;
+    top: -4px; left: 8px;
+    font-size: 28px;
+    color: var(--ai);
+    opacity: .3;
+    font-family: Georgia, serif;
+  }
+
+  /* 数据统计 */
+  .stats-row {
+    display: flex;
+    gap: 10px;
+    margin: 14px 0;
+  }
+  .stat-card {
+    flex: 1;
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-number {
+    font-size: var(--fs-display);
+    font-weight: var(--fw-display);
+    color: var(--primary);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-number.ai { color: var(--ai); }
+  .stat-label {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* 复习队列卡 */
+  .review-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    padding: 16px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: transform .1s;
+  }
+  .review-card:active { transform: scale(.98); }
+  .review-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: rgba(194,66,56,.1);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .review-badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    min-width: 18px; height: 18px;
+    background: var(--danger);
+    color: #fff;
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 4px;
+  }
+  .review-info { flex: 1; }
+  .review-title {
+    font-size: var(--fs-body);
+    font-weight: 600;
+  }
+  .review-desc {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .review-arrow { color: var(--text-muted); }
+
+  /* 冲刺模式 */
+  .sprint-card {
+    background: linear-gradient(135deg, var(--danger-weak) 0%, var(--danger-weak-deep) 100%);
+    border: 1px solid var(--danger-weak-border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sprint-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--danger);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .sprint-info { flex: 1; }
+  .sprint-title {
+    font-size: var(--fs-body);
+    font-weight: 600;
+    color: var(--danger);
+  }
+  .sprint-desc {
+    font-size: var(--fs-caption);
+    color: var(--text-secondary);
+    margin-top: 1px;
+  }
+  /* 开关 */
+  .switch {
+    width: 44px; height: 24px;
+    border-radius: 12px;
+    background: var(--border);
+    position: relative;
+    cursor: pointer;
+    transition: background .2s;
+    flex-shrink: 0;
+  }
+  .switch.on { background: var(--danger); }
+  .switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    transition: left .2s;
+  }
+  .switch.on::after { left: 22px; }
+
+  /* 通用卡片标题 */
+  .section-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: var(--fs-h2);
+    font-weight: 600;
+  }
+  .card-action {
+    font-size: var(--fs-caption);
+    color: var(--primary);
+    cursor: pointer;
+  }
+
+  /* 雷达图 */
+  .radar-container {
+    display: flex;
+    justify-content: center;
+    padding: 4px 0;
+  }
+  .radar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    margin-top: 10px;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .legend-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  /* 热力图 */
+  .heatmap-wrap {
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .heatmap-grid {
+    display: grid;
+    grid-template-rows: repeat(7, 1fr);
+    grid-auto-flow: column;
+    gap: 3px;
+    min-width: 100%;
+  }
+  .heatmap-cell {
+    width: 11px; height: 11px;
+    border-radius: 2px;
+    background: var(--bg-sunken);
+  }
+  .heatmap-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    padding: 0 2px;
+  }
+  .heatmap-legend {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+  .heatmap-legend .heatmap-cell { width: 10px; height: 10px; }
+
+  /* 设置列表 */
+  .settings-list {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .setting-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .1s;
+  }
+  .setting-item:last-child { border-bottom: none; }
+  .setting-item:active { background: var(--bg-sunken); }
+  .setting-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .setting-info { flex: 1; }
+  .setting-name {
+    font-size: var(--fs-body);
+    font-weight: 500;
+  }
+  .setting-desc {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+  .setting-arrow {
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .setting-value {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+    margin-right: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="prototype-page">
+  <div class="prototype-nav">
+    <a href="index.html">首页</a>
+    <a href="tasks.html">任务</a>
+    <a href="chat.html">答疑</a>
+    <a href="knowledge.html">知识库</a>
+    <a href="profile.html" class="active">我的</a>
+  </div>
+  <div class="prototype-label">我的界面 · 教练卡 + 7科雷达图 + 学习热力图 + 冲刺模式开关</div>
+
+  <div class="phone-frame">
+    <div class="phone-notch"></div>
+    <div class="phone-statusbar">
+      <span>9:41</span>
+      <span style="display:flex;gap:5px;align-items:center;">
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx="1"/><rect x="4" y="4" width="3" height="7" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="20" height="10" rx="2.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="16" height="7" rx="1.5" fill="currentColor"/><rect x="21.5" y="3.5" width="1.5" height="4" rx=".75" fill="currentColor" opacity=".4"/></svg>
+      </span>
+    </div>
+
+    <div class="phone-content">
+      <div class="page-header">
+        <div class="page-title">我的</div>
+        <div style="display:flex;gap:8px;">
+          <button style="width:36px;height:36px;border-radius:50%;background:var(--bg-card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="周报">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </button>
+          <button style="width:36px;height:36px;border-radius:50%;background:var(--bg-card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="设置">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="profile-content">
+        <!-- 教练卡片 -->
+        <div class="coach-card">
+          <div class="coach-head">
+            <div class="coach-avatar">教</div>
+            <div class="coach-info">
+              <div class="coach-name">
+                教练
+                <span class="chip chip-ai" style="height:20px;font-size:10px;">AI</span>
+              </div>
+              <div class="coach-personality">认真 · 直接 · 有判断力</div>
+            </div>
+            <div class="coach-edit">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </div>
+          </div>
+          <div class="coach-daily">
+            今天数据结构的层序遍历掌握度提升了 12 分，保持这个节奏。循环队列还有 3 天到期复习，建议今晚过一遍。
+          </div>
+        </div>
+
+        <!-- 数据统计 -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-number">23</div>
+            <div class="stat-label">连续学习天数</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number ai">18.5</div>
+            <div class="stat-label">本周学时 (h)</div>
+          </div>
+        </div>
+
+        <!-- 复习队列 -->
+        <div class="review-card" onclick="location.href='knowledge.html'">
+          <div class="review-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            <div class="review-badge">8</div>
+          </div>
+          <div class="review-info">
+            <div class="review-title">今日待复习</div>
+            <div class="review-desc">8 个知识点 · 预计 25 分钟</div>
+          </div>
+          <svg class="review-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+
+        <!-- 冲刺模式 -->
+        <div class="sprint-card">
+          <div class="sprint-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div class="sprint-info">
+            <div class="sprint-title">考研冲刺模式</div>
+            <div class="sprint-desc">距初试 134 天 · 任务密度 ×1.5</div>
+          </div>
+          <div class="switch" onclick="this.classList.toggle('on')"></div>
+        </div>
+
+        <!-- 雷达图 -->
+        <div class="section-card">
+          <div class="card-head">
+            <div class="card-title">7 科掌握度</div>
+            <span class="card-action">详情 ›</span>
+          </div>
+          <div class="radar-container">
+            <svg width="240" height="220" viewBox="0 0 240 220">
+              <!-- 背景网格 -->
+              <g transform="translate(120,110)">
+                <!-- 4层多边形 -->
+                <polygon points="0,-80 69.3,-40 69.3,40 0,80 -69.3,40 -69.3,-40" fill="none" stroke="var(--border)" stroke-width="1"/>
+                <polygon points="0,-60 52,-30 52,30 0,60 -52,30 -52,-30" fill="none" stroke="var(--border)" stroke-width="1"/>
+                <polygon points="0,-40 34.6,-20 34.6,20 0,40 -34.6,20 -34.6,-20" fill="none" stroke="var(--border)" stroke-width="1"/>
+                <polygon points="0,-20 17.3,-10 17.3,10 0,20 -17.3,10 -17.3,-10" fill="none" stroke="var(--border)" stroke-width="1"/>
+                <!-- 轴线 -->
+                <line x1="0" y1="0" x2="0" y2="-80" stroke="var(--border)" stroke-width="1"/>
+                <line x1="0" y1="0" x2="69.3" y2="-40" stroke="var(--border)" stroke-width="1"/>
+                <line x1="0" y1="0" x2="69.3" y2="40" stroke="var(--border)" stroke-width="1"/>
+                <line x1="0" y1="0" x2="0" y2="80" stroke="var(--border)" stroke-width="1"/>
+                <line x1="0" y1="0" x2="-69.3" y2="40" stroke="var(--border)" stroke-width="1"/>
+                <line x1="0" y1="0" x2="-69.3" y2="-40" stroke="var(--border)" stroke-width="1"/>
+
+                <!-- 数据多边形 (数据结构78, 组成原理45, 操作系统52, 计算机网络38, 数学一62, 英语一55, 政治30) -->
+                <!-- 7个点，从顶部开始顺时针 -->
+                <!-- 数据结构: 78% -> 0,-62.4 -->
+                <!-- 组成原理: 45% -> 31.2,-18 -->
+                <!-- 操作系统: 52% -> 36.1,20.8 -->
+                <!-- 计算机网络: 38% -> 0,30.4 -->
+                <!-- 数学一: 62% -> -42.9,24.8 -->
+                <!-- 英语一: 55% -> -38.1,-22 -->
+                <!-- 政治: 30% -> 0,-24 (这是第7个点，位置在顶部偏左? 实际7边形需要重新计算) -->
+
+                <!-- 7边形，角度从-90度开始，每个间隔 360/7=51.43度 -->
+                <!-- r = mastery/100 * 80 -->
+                <!-- 点1(数据结构78): angle=-90, r=62.4 -> (0,-62.4) -->
+                <!-- 点2(组成原理45): angle=-38.57, r=36 -> (28.2,-22.5) -->
+                <!-- 点3(操作系统52): angle=12.86, r=41.6 -> (40.6,9.3) -->
+                <!-- 点4(计算机网络38): angle=64.29, r=30.4 -> (13.1,27.4) -->
+                <!-- 点5(数学一62): angle=115.71, r=49.6 -> (-22.3,44.3) -->
+                <!-- 点6(英语一55): angle=167.14, r=44 -> (-43.2,8.7) -->
+                <!-- 点7(政治30): angle=218.57, r=24 -> (-18.8,-15.2) -->
+
+                <polygon points="0,-62.4 28.2,-22.5 40.6,9.3 13.1,27.4 -22.3,44.3 -43.2,8.7 -18.8,-15.2"
+                  fill="rgba(62,99,221,.12)" stroke="var(--primary)" stroke-width="2"/>
+
+                <!-- 数据点 -->
+                <circle cx="0" cy="-62.4" r="3.5" fill="var(--primary)"/>
+                <circle cx="28.2" cy="-22.5" r="3.5" fill="var(--primary)"/>
+                <circle cx="40.6" cy="9.3" r="3.5" fill="var(--primary)"/>
+                <circle cx="13.1" cy="27.4" r="3.5" fill="var(--primary)"/>
+                <circle cx="-22.3" cy="44.3" r="3.5" fill="var(--primary)"/>
+                <circle cx="-43.2" cy="8.7" r="3.5" fill="var(--primary)"/>
+                <circle cx="-18.8" cy="-15.2" r="3.5" fill="var(--primary)"/>
+              </g>
+
+              <!-- 标签 -->
+              <text x="120" y="18" text-anchor="middle" font-size="10" fill="var(--text-secondary)" font-weight="500">数据结构 78</text>
+              <text x="200" y="58" text-anchor="start" font-size="10" fill="var(--text-secondary)">组成 45</text>
+              <text x="200" y="140" text-anchor="start" font-size="10" fill="var(--text-secondary)">操作系统 52</text>
+              <text x="135" y="200" text-anchor="middle" font-size="10" fill="var(--text-secondary)">计网 38</text>
+              <text x="40" y="175" text-anchor="end" font-size="10" fill="var(--text-secondary)">数学一 62</text>
+              <text x="25" y="95" text-anchor="end" font-size="10" fill="var(--text-secondary)">英语一 55</text>
+              <text x="70" y="30" text-anchor="end" font-size="10" fill="var(--text-secondary)">政治 30</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- 学习热力图 -->
+        <div class="section-card">
+          <div class="card-head">
+            <div class="card-title">学习热力图</div>
+            <span class="card-action">近 16 周</span>
+          </div>
+          <div class="heatmap-wrap">
+            <div class="heatmap-grid" id="heatmapGrid"></div>
+          </div>
+          <div class="heatmap-legend">
+            <span>少</span>
+            <div class="heatmap-cell"></div>
+            <div class="heatmap-cell l1"></div>
+            <div class="heatmap-cell l2"></div>
+            <div class="heatmap-cell l3"></div>
+            <div class="heatmap-cell l4"></div>
+            <span>多</span>
+          </div>
+          <div class="heatmap-labels">
+            <span>累计 86 天 · 总学时 142h</span>
+            <span>最长连续 23 天</span>
+          </div>
+        </div>
+
+        <!-- 设置入口 -->
+        <div class="settings-list">
+          <div class="setting-item">
+            <div class="setting-icon" style="background:var(--primary-weak);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10h-10V2z"/></svg>
+            </div>
+            <div class="setting-info">
+              <div class="setting-name">AI 模型设置</div>
+              <div class="setting-desc">DeepSeek · 规划/答疑/出题分角色配置</div>
+            </div>
+            <span class="setting-value">已配置</span>
+            <svg class="setting-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="setting-item">
+            <div class="setting-icon" style="background:var(--ai-weak);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ai)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div class="setting-info">
+              <div class="setting-name">复习节奏</div>
+              <div class="setting-desc">艾宾浩斯 · 第 1/3/7 天</div>
+            </div>
+            <svg class="setting-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="setting-item">
+            <div class="setting-icon" style="background:rgba(62,142,88,.1);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </div>
+            <div class="setting-info">
+              <div class="setting-name">数据导出</div>
+              <div class="setting-desc">Markdown 笔记 / JSON 全量备份</div>
+            </div>
+            <svg class="setting-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="setting-item">
+            <div class="setting-icon" style="background:var(--bg-sunken);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div class="setting-info">
+              <div class="setting-name">后端地址</div>
+              <div class="setting-desc">局域网服务 · 192.168.1.100:8000</div>
+            </div>
+            <span class="setting-value">已连接</span>
+            <svg class="setting-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="setting-item">
+            <div class="setting-icon" style="background:var(--bg-sunken);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </div>
+            <div class="setting-info">
+              <div class="setting-name">关于</div>
+              <div class="setting-desc">ai学 v1.0 · AI 驱动的互动式学习伴侣</div>
+            </div>
+            <svg class="setting-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部 Tab -->
+    <div class="tabbar">
+      <a class="tabbar-item" href="tasks.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>任务</span>
+      </a>
+      <a class="tabbar-item" href="chat.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>答疑</span>
+      </a>
+      <a class="tabbar-item" href="knowledge.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>知识库</span>
+      </a>
+      <a class="tabbar-item active" href="profile.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>我的</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 生成学习热力图 (16周 x 7天 = 112格)
+  const grid = document.getElementById('heatmapGrid');
+  const levels = ['', 'l1', 'l2', 'l3', 'l4'];
+  // 模拟数据：最近学习较多，前面较少
+  const pattern = [
+    0,0,1,0,2,1,0,  0,1,0,2,1,3,0,  1,0,2,1,3,2,1,
+    0,2,1,3,2,4,1,  1,3,2,4,3,2,0,  2,1,3,2,4,3,1,
+    1,2,4,3,2,4,2,  3,2,4,3,4,2,3,  2,4,3,4,3,4,2,
+    4,3,4,2,3,4,3,  3,4,3,4,2,3,4,  2,3,4,3,4,3,2,
+    3,4,3,4,3,4,3,  4,3,4,3,4,3,4
+  ];
+  for (let i = 0; i < 112; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'heatmap-cell' + (levels[pattern[i] || 0] ? ' ' + levels[pattern[i]] : '');
+    grid.appendChild(cell);
+  }
+</script>
+</body>
+</html>

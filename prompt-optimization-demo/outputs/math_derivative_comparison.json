@@ -1,0 +1,39 @@
+{
+  "scenario_id": "math_derivative",
+  "label": "高数-单选（导数应用）",
+  "category": "高数",
+  "before": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "你是一个专业的出题引擎，负责根据知识点生成高质量的练习题。\n\n请严格按照以下 JSON 格式输出，不要输出任何其他文字或代码块标记：\n\n{\n  \"schema_version\": \"2.0\",\n  \"type\": \"single_choice\",\n  \"question\": \"题目内容\",\n  \"options\": [\"选项A\", \"选项B\", \"选项C\", \"选项D\"],\n  \"correct_answer\": 0,\n  \"explanation\": \"详细解析\",\n  \"analysis\": \"易错点分析\",\n  \"points\": 1,\n  \"difficulty\": 3\n}\n\n字段说明：\n- question: 题干，清晰描述问题\n- options: 4个选项的字符串数组\n- correct_answer: 正确选项的索引（0-3）\n- explanation: 详细的解题过程和答案说明\n- analysis: 易错点、混淆点分析\n- points: 分值\n- difficulty: 难度1-5\n\n现在请根据以下参数生成题目：\n知识点：导数的应用（单调性与极值）\n题型：single_choice\n难度：3"
+      }
+    ],
+    "output": "{\n  \"schema_version\": \"2.0\",\n  \"type\": \"single_choice\",\n  \"question\": \"函数 f(x)=x^3-3x^2+1 的单调递减区间是？\",\n  \"options\": [\"(0, 2)\", \"(-∞, 0)\", \"(2, +∞)\", \"(-∞, 0) ∪ (2, +∞)\"],\n  \"correct_answer\": 0,\n  \"explanation\": \"先求导：f'(x)=3x^2-6x=3x(x-2)。令 f'(x)<0，即 3x(x-2)<0，解得 0<x<2。因此函数 f(x) 的单调递减区间为 (0, 2)。\",\n  \"analysis\": \"易错点：1. 误将 f'(x)>0 的解集当作递减区间；2. 将单调递减区间错误地写成并集形式，如 (-∞,0)∪(2,+∞)，实际上递减区间是连续的 (0,2)；3. 忽略导数等于0的点不影响单调区间的开闭，通常写开区间即可。\",\n  \"points\": 1,\n  \"difficulty\": 3\n}",
+    "usage": {
+      "prompt_tokens": 309,
+      "completion_tokens": 494,
+      "total_tokens": 803,
+      "prompt_tokens_details": {}
+    }
+  },
+  "after": {
+    "messages": [
+      {
+        "role": "system",
+        "content": "你是出题引擎。输出严格JSON，不要其他文字或代码块。输出紧凑JSON（单行，无缩进无换行）。\n\n字段定义：\n- question: string 题干\n- options: string[4] 四个选项\n- correct_answer: int 正确选项索引(0-3)\n- explanation: string 解析(≤80字)\n- difficulty: int 难度(1-5)"
+      },
+      {
+        "role": "user",
+        "content": "{\"knowledge\":\"导数的应用（单调性与极值）\",\"type\":\"single_choice\",\"difficulty\":3}"
+      }
+    ],
+    "output": "{\"question\":\"函数f(x)=x^3-3x的单调递减区间是？\",\"options\":[\"(-∞,-1)\",\"(-1,1)\",\"(1,+∞)\",\"(-∞,-1)∪(1,+∞)\"],\"correct_answer\":1,\"explanation\":\"f'(x)=3x^2-3=3(x-1)(x+1)，令f'(x)<0得-1<x<1，故单调递减区间为(-1,1)。\",\"difficulty\":3}",
+    "usage": {
+      "prompt_tokens": 194,
+      "completion_tokens": 131,
+      "total_tokens": 325,
+      "prompt_tokens_details": {}
+    }
+  }
+}

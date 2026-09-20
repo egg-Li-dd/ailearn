@@ -1,0 +1,12 @@
+[只有 user prompt，无 system]
+
+为知识点「二叉树遍历」生成一道填空题。
+返回严格 JSON（不要任何其他文字、不要代码块），必须包含 schema_version 和 type 字段。
+JSON 格式：{"schema_version":"2.0","type":"fill_cloze","question":"题干中用 {{1}}{{2}} 标记挖空位置，例如：二叉树的层序遍历使用{{1}}实现，时间复杂度为{{2}}","blanks":[{"id":1,"answer":"队列","hint":"FIFO数据结构（可选）"},{"id":2,"answer":"O(n)","hint":null}],"correct_answer":["队列","O(n)"],"explanation":"解析","points":2,"difficulty":3}
+要求：
+- 你（AI）决定在哪里挖空，用 {{数字}} 占位符标记，数字从 1 开始连续编号
+- 挖 2-3 个空，每个空对应一个核心知识点
+- blanks 数组中每个元素的 id 与题干占位符数字对应，answer 是该空的标准答案
+- hint 是给学生的提示（可选，没有则 null）
+- correct_answer 是答案数组，顺序与 blanks 一致
+- 题干中不要出现答案本身

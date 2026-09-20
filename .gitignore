@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# 虚拟环境
+backend/.venv/
+backend/venv/
+env/
+ENV/
+
+# 数据目录（含真实用户数据库、WAL、备份、日志、AI 密钥配置）
+# 整个目录都不入库：里面是运行期数据，且可能包含用户隐私与密钥
+backend/data/
+
+# 日志
+*.log
+
+# Node
+admin/node_modules/
+admin/dist/
+
+# 构建产物
+backend/app/static/admin/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 临时文件
+*.tmp
+*.temp
+*.bak
+
+# 夸克网盘配置
+.quark-nd-disk/
+
+# 第三方参考项目副本（OpenMAIC，仅本地参考，非本项目代码）
+_ref_openmaic/
+
+# 大体积二进制工具与压缩包
+ngrok.exe
+*.zip
+tools/quark-nd-mcp/bin/
+
+# Gradle 缓存
+.gradle/
+
+# Android/Gradle 本机配置（含本机 SDK 绝对路径，官方要求不入库）
+local.properties
+android-build/local.properties
+
+# 自动生成的清单文件
+_backend_filelist.txt
+
+# 运行期产物
+*.pid
+*.db-shm
+*.db-wal

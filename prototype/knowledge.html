@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ai学 · 知识库界面原型</title>
+<link rel="stylesheet" href="design-tokens.css">
+<style>
+  .kb-header {
+    padding: 12px 16px 8px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .kb-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .kb-title {
+    font-size: var(--fs-h1);
+    font-weight: 600;
+  }
+  .kb-stats {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .search-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .search-box {
+    flex: 1;
+    position: relative;
+  }
+  .search-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+  }
+  .search-box input {
+    width: 100%;
+    height: 38px;
+    background: var(--bg-sunken);
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 0 12px 0 36px;
+    font-size: var(--fs-body);
+    font-family: inherit;
+    outline: none;
+    color: var(--text);
+  }
+  .search-box input:focus { border-color: var(--primary); }
+  .filter-btn {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: var(--bg-sunken);
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+  .filter-btn.active { background: var(--primary-weak); color: var(--primary); }
+
+  .subject-chips {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .subject-chips::-webkit-scrollbar { display: none; }
+  .subject-chip {
+    flex-shrink: 0;
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 15px;
+    font-size: var(--fs-caption);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    background: var(--bg-sunken);
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    transition: all .1s;
+  }
+  .subject-chip.active {
+    background: var(--primary-weak);
+    color: var(--primary);
+    border-color: rgba(62,99,221,.2);
+  }
+  .subject-chip .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  .kb-body {
+    padding: 8px 12px 100px;
+  }
+
+  /* 树节点增强 */
+  .ktree-node {
+    padding: 9px 10px;
+  }
+  .ktree-node .node-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .difficulty-stars {
+    display: flex;
+    gap: 1px;
+    font-size: 10px;
+  }
+  .mastery-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    min-width: 32px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 掌握度色条（节点左侧小指示） */
+  .node-indicator {
+    width: 3px;
+    height: 20px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* 过滤底部弹层 */
+  .filter-sheet {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-card);
+    border-radius: 20px 20px 0 0;
+    padding: 20px 16px 32px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,.1);
+    transform: translateY(100%);
+    transition: transform .25s ease-out;
+    z-index: 150;
+  }
+  .filter-sheet.show { transform: translateY(0); }
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+  .sheet-title {
+    font-size: var(--fs-h2);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .filter-group { margin-bottom: 18px; }
+  .filter-label {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .filter-opt {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 16px;
+    font-size: var(--fs-caption);
+    background: var(--bg-sunken);
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .filter-opt.active {
+    background: var(--primary-weak);
+    color: var(--primary);
+    border-color: rgba(62,99,221,.2);
+  }
+  .sheet-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .sheet-actions button {
+    flex: 1;
+    height: 44px;
+    border-radius: 12px;
+    font-size: var(--fs-body);
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.3);
+    z-index: 140;
+    display: none;
+  }
+  .overlay.show { display: block; }
+
+  /* 空搜索结果 */
+  .search-result-hint {
+    padding: 8px 4px;
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+<div class="prototype-page">
+  <div class="prototype-nav">
+    <a href="index.html">首页</a>
+    <a href="tasks.html">任务</a>
+    <a href="chat.html">答疑</a>
+    <a href="knowledge.html" class="active">知识库</a>
+    <a href="profile.html">我的</a>
+  </div>
+  <div class="prototype-label">知识库 · 点击节点展开/折叠 · 右上角过滤按钮打开弹层 · 科目可横向滑动</div>
+
+  <div class="phone-frame">
+    <div class="phone-notch"></div>
+    <div class="phone-statusbar">
+      <span>9:41</span>
+      <span style="display:flex;gap:5px;align-items:center;">
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx="1"/><rect x="4" y="4" width="3" height="7" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="20" height="10" rx="2.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="16" height="7" rx="1.5" fill="currentColor"/><rect x="21.5" y="3.5" width="1.5" height="4" rx=".75" fill="currentColor" opacity=".4"/></svg>
+      </span>
+    </div>
+
+    <div class="phone-content" style="position:relative;">
+      <!-- 顶部 -->
+      <div class="kb-header">
+        <div class="kb-title-row">
+          <div>
+            <div class="kb-title">知识库</div>
+            <div class="kb-stats">7 科目 · 248 知识点 · 已掌握 86</div>
+          </div>
+          <button style="width:36px;height:36px;border-radius:50%;background:var(--primary-weak);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;" title="考纲导入">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+
+        <!-- 搜索 -->
+        <div class="search-row">
+          <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="搜索知识点、概念..." id="searchInput" oninput="filterTree()">
+          </div>
+          <button class="filter-btn" id="filterBtn" onclick="toggleFilter()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          </button>
+        </div>
+
+        <!-- 科目 chips -->
+        <div class="subject-chips">
+          <div class="subject-chip active" onclick="selectSubject(this)">
+            <span class="dot" style="background:var(--subj-ds);"></span>数据结构
+          </div>
+          <div class="subject-chip" onclick="selectSubject(this)">
+            <span class="dot" style="background:var(--subj-co);"></span>组成原理
+          </div>
+          <div class="subject-chip" onclick="selectSubject(this)">
+            <span class="dot" style="background:var(--subj-os);"></span>操作系统
+          </div>
+          <div class="subject-chip" onclick="selectSubject(this)">
+            <span class="dot" style="background:var(--subj-net);"></span>计算机网络
+          </div>
+          <div class="subject-chip" onclick="selectSubject(this)">
+            <span class="dot" style="background:var(--subj-math);"></span>数学一
+          </div>
+          <div class="subject-chip" onclick="selectSubject(this)">
+            <span class="dot" style="background:var(--subj-en);"></span>英语一
+          </div>
+          <div class="subject-chip" onclick="selectSubject(this)">
+            <span class="dot" style="background:var(--subj-politics);"></span>政治
+          </div>
+        </div>
+      </div>
+
+      <!-- 树主体 -->
+      <div class="kb-body" id="treeBody">
+        <div class="search-result-hint" id="searchHint" style="display:none;"></div>
+
+        <!-- 第一章：线性表 -->
+        <div class="ktree-node expanded" onclick="toggleNode(this)">
+          <span class="tree-toggle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+          <span class="node-indicator" style="background:var(--m-mastered);"></span>
+          <span class="ktree-name m-mastered">第一章 线性表</span>
+          <div class="node-right">
+            <span class="mastery-badge" style="background:rgba(62,142,88,.1);color:var(--m-mastered);">78</span>
+          </div>
+        </div>
+        <div class="ktree-children" style="display:block;">
+          <!-- 1.1 顺序表 -->
+          <div class="ktree-node expanded" onclick="toggleNode(this)">
+            <span class="tree-toggle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+            <span class="node-indicator" style="background:var(--m-mastered);"></span>
+            <span class="ktree-name m-mastered">1.1 顺序表</span>
+            <div class="node-right">
+              <span class="difficulty-stars" style="color:var(--warning);">★★</span>
+              <span class="mastery-badge" style="background:rgba(62,142,88,.1);color:var(--m-mastered);">82</span>
+            </div>
+          </div>
+          <div class="ktree-children" style="display:block;">
+            <div class="ktree-node" onclick="toggleNode(this)">
+              <span class="tree-toggle leaf"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+              <span class="node-indicator" style="background:var(--m-mastered-deep);"></span>
+              <span class="ktree-name m-mastered-deep">顺序存储结构定义</span>
+              <div class="node-right">
+                <span class="difficulty-stars" style="color:var(--text-muted);">★</span>
+                <span class="mastery-badge" style="background:rgba(46,110,66,.1);color:var(--success-deep);">90</span>
+              </div>
+            </div>
+            <div class="ktree-node" onclick="toggleNode(this)">
+              <span class="tree-toggle leaf"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+              <span class="node-indicator" style="background:var(--m-mastered);"></span>
+              <span class="ktree-name m-mastered">插入与删除操作</span>
+              <div class="node-right">
+                <span class="difficulty-stars" style="color:var(--warning);">★★★</span>
+                <span class="mastery-badge" style="background:rgba(62,142,88,.1);color:var(--m-mastered);">75</span>
+              </div>
+            </div>
+            <div class="ktree-node" onclick="toggleNode(this)">
+              <span class="tree-toggle leaf"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+              <span class="node-indicator" style="background:var(--m-learning);"></span>
+              <span class="ktree-name m-learning">动态扩容 (realloc)</span>
+              <div class="node-right">
+                <span class="difficulty-stars" style="color:var(--danger);">★★★★</span>
+                <span class="mastery-badge" style="background:rgba(199,126,30,.1);color:var(--m-learning);">55</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 1.2 链表 -->
+          <div class="ktree-node" onclick="toggleNode(this)">
+            <span class="tree-toggle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+            <span class="node-indicator" style="background:var(--m-learning);"></span>
+            <span class="ktree-name m-learning">1.2 链表</span>
+            <div class="node-right">
+              <span class="difficulty-stars" style="color:var(--warning);">★★★</span>
+              <span class="mastery-badge" style="background:rgba(199,126,30,.1);color:var(--m-learning);">62</span>
+            </div>
+          </div>
+          <div class="ktree-children">
+            <div class="ktree-node" onclick="toggleNode(this)">
+              <span class="tree-toggle leaf"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+              <span class="node-indicator" style="background:var(--m-mastered);"></span>
+              <span class="ktree-name m-mastered">单链表基本操作</span>
+              <div class="node-right">
+                <span class="mastery-badge" style="background:rgba(62,142,88,.1);color:var(--m-mastered);">72</span>
+              </div>
+            </div>
+            <div class="ktree-node" onclick="toggleNode(this)">
+              <span class="tree-toggle leaf"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+              <span class="node-indicator" style="background:var(--m-review);"></span>
+              <span class="ktree-name m-review">双链表与循环链表</span>
+              <div class="node-right">
+                <span class="difficulty-stars" style="color:var(--danger);">★★★★</span>
+                <span class="mastery-badge" style="background:rgba(194,66,56,.1);color:var(--m-review);">68⏰</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第二章：栈与队列 -->
+        <div class="ktree-node expanded" onclick="toggleNode(this)">
+          <span class="tree-toggle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+          <span class="node-indicator" style="background:var(--m-learning);"></span>
+          <span class="ktree-name m-learning">第二章 栈与队列</span>
+          <div class="node-right">
+            <span class="mastery-badge" style="background:rgba(199,126,30,.1);color:var(--m-learning);">58</span>
+          </div>
+        </div>
+        <div class="ktree-children" style="display:block;">
+          <div class="ktree-node" onclick="toggleNode(this)">
+            <span class="tree-toggle leaf"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+            <span class="node-indicator" style="background:var(--m-mastered);"></span>
+            <span class="ktree-name m-mastered">栈的顺序存储</span>
+            <div class="node-right">
+              <span class="mastery-badge" style="background:rgba(62,142,88,.1);color:var(--m-mastered);">76</span>
+            </div>
+          </div>
+          <div class="ktree-node" onclick="toggleNode(this)">
+            <span class="tree-toggle leaf"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+            <span class="node-indicator" style="background:var(--m-learning);"></span>
+            <span class="ktree-name m-learning">循环队列</span>
+            <div class="node-right">
+              <span class="difficulty-stars" style="color:var(--danger);">★★★★</span>
+              <span class="mastery-badge" style="background:rgba(199,126,30,.1);color:var(--m-learning);">45</span>
+            </div>
+          </div>
+          <div class="ktree-node" onclick="toggleNode(this)">
+            <span class="tree-toggle leaf"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+            <span class="node-indicator" style="background:var(--m-untouched);"></span>
+            <span class="ktree-name" style="color:var(--m-untouched);">栈的应用（表达式求值）</span>
+            <div class="node-right">
+              <span class="difficulty-stars" style="color:var(--danger);">★★★★★</span>
+              <span class="mastery-badge" style="background:var(--bg-sunken);color:var(--m-untouched);">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第三章：树与二叉树 -->
+        <div class="ktree-node" onclick="toggleNode(this)">
+          <span class="tree-toggle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+          <span class="node-indicator" style="background:var(--m-learning);"></span>
+          <span class="ktree-name m-learning">第三章 树与二叉树</span>
+          <div class="node-right">
+            <span class="difficulty-stars" style="color:var(--danger);">★★★★</span>
+            <span class="mastery-badge" style="background:rgba(199,126,30,.1);color:var(--m-learning);">52</span>
+          </div>
+        </div>
+        <div class="ktree-children">
+          <div class="ktree-node" onclick="toggleNode(this)">
+            <span class="tree-toggle leaf"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+            <span class="node-indicator" style="background:var(--m-learning);"></span>
+            <span class="ktree-name m-learning">二叉树遍历</span>
+            <div class="node-right">
+              <span class="mastery-badge" style="background:rgba(199,126,30,.1);color:var(--m-learning);">60</span>
+            </div>
+          </div>
+          <div class="ktree-node" onclick="toggleNode(this)">
+            <span class="tree-toggle leaf"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+            <span class="node-indicator" style="background:var(--m-untouched);"></span>
+            <span class="ktree-name" style="color:var(--m-untouched);">线索二叉树</span>
+            <div class="node-right">
+              <span class="mastery-badge" style="background:var(--bg-sunken);color:var(--m-untouched);">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第四章：图 -->
+        <div class="ktree-node" onclick="toggleNode(this)">
+          <span class="tree-toggle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+          <span class="node-indicator" style="background:var(--m-untouched);"></span>
+          <span class="ktree-name" style="color:var(--m-untouched);">第四章 图</span>
+          <div class="node-right">
+            <span class="difficulty-stars" style="color:var(--danger);">★★★★★</span>
+            <span class="mastery-badge" style="background:var(--bg-sunken);color:var(--m-untouched);">0</span>
+          </div>
+        </div>
+
+        <!-- 第五章：查找 -->
+        <div class="ktree-node" onclick="toggleNode(this)">
+          <span class="tree-toggle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+          <span class="node-indicator" style="background:var(--m-untouched);"></span>
+          <span class="ktree-name" style="color:var(--m-untouched);">第五章 查找</span>
+          <div class="node-right">
+            <span class="mastery-badge" style="background:var(--bg-sunken);color:var(--m-untouched);">0</span>
+          </div>
+        </div>
+
+        <!-- 第六章：排序 -->
+        <div class="ktree-node" onclick="toggleNode(this)">
+          <span class="tree-toggle"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+          <span class="node-indicator" style="background:var(--m-untouched);"></span>
+          <span class="ktree-name" style="color:var(--m-untouched);">第六章 排序</span>
+          <div class="node-right">
+            <span class="mastery-badge" style="background:var(--bg-sunken);color:var(--m-untouched);">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 遮罩 -->
+      <div class="overlay" id="overlay" onclick="toggleFilter()"></div>
+
+      <!-- 过滤弹层 -->
+      <div class="filter-sheet" id="filterSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title">筛选</div>
+
+        <div class="filter-group">
+          <div class="filter-label">掌握状态</div>
+          <div class="filter-options">
+            <div class="filter-opt active" onclick="this.classList.toggle('active')">全部</div>
+            <div class="filter-opt" onclick="this.classList.toggle('active')"><span style="width:6px;height:6px;border-radius:50%;background:var(--m-untouched);display:inline-block;"></span>未学</div>
+            <div class="filter-opt" onclick="this.classList.toggle('active')"><span style="width:6px;height:6px;border-radius:50%;background:var(--m-learning);display:inline-block;"></span>学习中</div>
+            <div class="filter-opt" onclick="this.classList.toggle('active')"><span style="width:6px;height:6px;border-radius:50%;background:var(--m-mastered);display:inline-block;"></span>已掌握</div>
+            <div class="filter-opt" onclick="this.classList.toggle('active')"><span style="width:6px;height:6px;border-radius:50%;background:var(--m-review);display:inline-block;"></span>待复习</div>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">难度</div>
+          <div class="filter-options">
+            <div class="filter-opt active" onclick="this.classList.toggle('active')">全部</div>
+            <div class="filter-opt" onclick="this.classList.toggle('active')">★</div>
+            <div class="filter-opt" onclick="this.classList.toggle('active')">★★</div>
+            <div class="filter-opt" onclick="this.classList.toggle('active')">★★★</div>
+            <div class="filter-opt" onclick="this.classList.toggle('active')">★★★★</div>
+            <div class="filter-opt" onclick="this.classList.toggle('active')">★★★★★</div>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">来源</div>
+          <div class="filter-options">
+            <div class="filter-opt active" onclick="this.classList.toggle('active')">全部</div>
+            <div class="filter-opt" onclick="this.classList.toggle('active')">手动录入</div>
+            <div class="filter-opt" onclick="this.classList.toggle('active')">答疑沉淀</div>
+            <div class="filter-opt" onclick="this.classList.toggle('active')">AI生成</div>
+            <div class="filter-opt" onclick="this.classList.toggle('active')">考纲导入</div>
+          </div>
+        </div>
+
+        <div class="sheet-actions">
+          <button class="btn-secondary" style="background:var(--bg-sunken);color:var(--text-secondary);" onclick="toggleFilter()">重置</button>
+          <button class="btn-primary" style="background:var(--primary);color:#fff;" onclick="toggleFilter()">应用筛选</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部 Tab -->
+    <div class="tabbar">
+      <a class="tabbar-item" href="tasks.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>任务</span>
+      </a>
+      <a class="tabbar-item" href="chat.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>答疑</span>
+      </a>
+      <a class="tabbar-item active" href="knowledge.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>知识库</span>
+      </a>
+      <a class="tabbar-item" href="profile.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>我的</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleNode(el) {
+  // 阻止事件冒泡
+  event.stopPropagation();
+  const children = el.nextElementSibling;
+  if (children && children.classList.contains('ktree-children')) {
+    el.classList.toggle('expanded');
+    children.style.display = el.classList.contains('expanded') ? 'block' : 'none';
+  }
+}
+
+function selectSubject(el) {
+  document.querySelectorAll('.subject-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleFilter() {
+  document.getElementById('filterSheet').classList.toggle('show');
+  document.getElementById('overlay').classList.toggle('show');
+  document.getElementById('filterBtn').classList.toggle('active');
+}
+
+function filterTree() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const hint = document.getElementById('searchHint');
+  const nodes = document.querySelectorAll('.ktree-node');
+  let count = 0;
+
+  if (!q) {
+    hint.style.display = 'none';
+    nodes.forEach(n => n.style.display = '');
+    return;
+  }
+
+  nodes.forEach(n => {
+    const name = n.querySelector('.ktree-name').textContent.toLowerCase();
+    if (name.includes(q)) {
+      n.style.display = '';
+      count++;
+      // 展开父级
+      let parent = n.parentElement;
+      while (parent && parent.classList.contains('ktree-children')) {
+        parent.style.display = 'block';
+        const prev = parent.previousElementSibling;
+        if (prev && prev.classList.contains('ktree-node')) prev.classList.add('expanded');
+        parent = parent.parentElement;
+      }
+    } else {
+      n.style.display = 'none';
+    }
+  });
+
+  hint.style.display = 'block';
+  hint.textContent = `搜索"${q}"找到 ${count} 个节点`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.AIXue" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#3E63DD</item>
+        <item name="colorPrimaryVariant">#2A4CB8</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+    </style>
+</resources>

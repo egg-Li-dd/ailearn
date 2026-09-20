@@ -1,0 +1,30 @@
+[只有 user prompt，无 system]
+你是一个专业的出题引擎，负责根据知识点生成高质量的练习题。
+
+请严格按照以下 JSON 格式输出，不要输出任何其他文字或代码块标记：
+
+{
+  "schema_version": "2.0",
+  "type": "single_choice",
+  "question": "题目内容",
+  "options": ["选项A", "选项B", "选项C", "选项D"],
+  "correct_answer": 0,
+  "explanation": "详细解析",
+  "analysis": "易错点分析",
+  "points": 1,
+  "difficulty": 3
+}
+
+字段说明：
+- question: 题干，清晰描述问题
+- options: 4个选项的字符串数组
+- correct_answer: 正确选项的索引（0-3）
+- explanation: 详细的解题过程和答案说明
+- analysis: 易错点、混淆点分析
+- points: 分值
+- difficulty: 难度1-5
+
+现在请根据以下参数生成题目：
+知识点：导数的应用（单调性与极值）
+题型：single_choice
+难度：3

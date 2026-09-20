@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A/B 实验看板 - ai学</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #0f1117;
+    color: #e4e4e7;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  h1 { font-size: 22px; font-weight: 600; color: #f4f4f5; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  button {
+    padding: 8px 16px;
+    border: 1px solid #3f3f46;
+    border-radius: 6px;
+    background: #27272a;
+    color: #e4e4e7;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  button:hover { background: #3f3f46; border-color: #52525b; }
+  button.primary { background: #16a34a; border-color: #16a34a; color: #fff; }
+  button.primary:hover { background: #15803d; }
+  button.danger { background: #dc2626; border-color: #dc2626; color: #fff; }
+  button.danger:hover { background: #b91c1c; }
+  button.warning { background: #d97706; border-color: #d97706; color: #fff; }
+  button.warning:hover { background: #b45309; }
+  button.small { padding: 4px 10px; font-size: 12px; }
+  .toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #a1a1aa; }
+  .toggle input { cursor: pointer; }
+
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .summary-card {
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .summary-card .label { font-size: 12px; color: #71717a; margin-bottom: 4px; }
+  .summary-card .value { font-size: 24px; font-weight: 600; color: #f4f4f5; }
+
+  .experiment-card {
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .experiment-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #27272a;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .experiment-title { flex: 1; min-width: 200px; }
+  .experiment-name { font-size: 16px; font-weight: 600; color: #f4f4f5; margin-bottom: 4px; }
+  .experiment-desc { font-size: 13px; color: #a1a1aa; line-height: 1.5; }
+  .experiment-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge.draft { background: #3f3f46; color: #a1a1aa; }
+  .badge.running { background: #166534; color: #86efac; }
+  .badge.paused { background: #854d0e; color: #fde047; }
+  .badge.ended { background: #7f1d1d; color: #fca5a5; }
+  .badge.traffic { background: #1e3a5f; color: #93c5fd; }
+
+  .experiment-body { padding: 16px 20px; }
+  .stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .stats-table th, .stats-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #27272a;
+  }
+  .stats-table th { color: #71717a; font-weight: 500; font-size: 12px; }
+  .stats-table td { color: #d4d4d8; }
+  .stats-table tr:last-child td { border-bottom: none; }
+  .metric-good { color: #4ade80; }
+  .metric-bad { color: #f87171; }
+  .metric-neutral { color: #a1a1aa; }
+
+  .experiment-actions {
+    padding: 12px 20px;
+    border-top: 1px solid #27272a;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    background: #1c1c1f;
+  }
+
+  .create-panel {
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 10px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    display: none;
+  }
+  .create-panel.open { display: block; }
+  .create-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid #27272a;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .create-body { padding: 20px; }
+  .form-row { margin-bottom: 14px; }
+  .form-row label { display: block; font-size: 13px; color: #a1a1aa; margin-bottom: 6px; }
+  .form-row input, .form-row textarea, .form-row select {
+    width: 100%;
+    padding: 8px 12px;
+    background: #0f1117;
+    border: 1px solid #3f3f46;
+    border-radius: 6px;
+    color: #e4e4e7;
+    font-size: 13px;
+  }
+  .form-row input:focus, .form-row textarea:focus { outline: none; border-color: #52525b; }
+  .variants-editor { display: flex; gap: 8px; flex-wrap: wrap; }
+  .variant-item {
+    display: flex; gap: 6px; align-items: center;
+    background: #0f1117; padding: 6px 10px; border-radius: 6px; border: 1px solid #3f3f46;
+  }
+  .variant-item input { width: 80px; padding: 4px 8px; font-size: 12px; }
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #71717a;
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+  .loading { text-align: center; padding: 40px; color: #71717a; }
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    z-index: 1000;
+    animation: slideIn 0.2s ease;
+  }
+  .toast.success { background: #166534; color: #86efac; border: 1px solid #16a34a; }
+  .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #dc2626; }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>A/B 实验看板</h1>
+    <div class="header-actions">
+      <label class="toggle">
+        <input type="checkbox" id="autoRefresh" checked> 自动刷新 (30s)
+      </label>
+      <button onclick="loadExperiments()">刷新</button>
+      <button class="primary" onclick="toggleCreatePanel()">+ 新建实验</button>
+    </div>
+  </header>
+
+  <div class="summary-bar" id="summaryBar"></div>
+
+  <div class="create-panel" id="createPanel">
+    <div class="create-header">新建实验</div>
+    <div class="create-body">
+      <div class="form-row">
+        <label>实验名称（唯一）</label>
+        <input type="text" id="newName" placeholder="如：quiz_prompt_v2">
+      </div>
+      <div class="form-row">
+        <label>描述</label>
+        <textarea id="newDesc" rows="2" placeholder="实验目的和对比内容"></textarea>
+      </div>
+      <div class="form-row">
+        <label>流量百分比 (0-100)</label>
+        <input type="number" id="newTraffic" value="20" min="0" max="100">
+      </div>
+      <div class="form-row">
+        <label>变体配置</label>
+        <div class="variants-editor" id="variantsEditor">
+          <div class="variant-item">
+            <input type="text" value="control" placeholder="名称">
+            <input type="number" value="50" min="1" max="100" placeholder="权重">
+          </div>
+          <div class="variant-item">
+            <input type="text" value="treatment" placeholder="名称">
+            <input type="number" value="50" min="1" max="100" placeholder="权重">
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
+        <button class="primary" onclick="createExperiment()">创建</button>
+        <button onclick="toggleCreatePanel()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="experimentList"></div>
+</div>
+
+<script>
+const API_BASE = '/api/v1/experiments';
+let autoRefreshTimer = null;
+
+async function api(url, options = {}) {
+  try {
+    const res = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options
+    });
+    if (!res.ok && res.status !== 204) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || `HTTP ${res.status}`);
+    }
+    if (res.status === 204) return null;
+    return res.json();
+  } catch (e) {
+    showToast(e.message, 'error');
+    throw e;
+  }
+}
+
+function showToast(msg, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function statusBadge(status) {
+  const labels = { draft: '草稿', running: '运行中', paused: '已暂停', ended: '已结束' };
+  return `<span class="badge ${status}">${labels[status] || status}</span>`;
+}
+
+function formatPct(v) {
+  if (v == null) return '-';
+  return (v * 100).toFixed(1) + '%';
+}
+
+function formatMs(v) {
+  if (v == null) return '-';
+  return v.toFixed(0) + 'ms';
+}
+
+function compareMetric(controlVal, treatmentVal, higherIsBetter = true) {
+  if (controlVal == null || treatmentVal == null) return 'metric-neutral';
+  if (higherIsBetter) {
+    return treatmentVal >= controlVal ? 'metric-good' : 'metric-bad';
+  }
+  return treatmentVal <= controlVal ? 'metric-good' : 'metric-bad';
+}
+
+function renderSummary(experiments) {
+  const total = experiments.length;
+  const running = experiments.filter(e => e.status === 'running').length;
+  const draft = experiments.filter(e => e.status === 'draft').length;
+  const paused = experiments.filter(e => e.status === 'paused').length;
+
+  document.getElementById('summaryBar').innerHTML = `
+    <div class="summary-card"><div class="label">实验总数</div><div class="value">${total}</div></div>
+    <div class="summary-card"><div class="label">运行中</div><div class="value" style="color:#4ade80">${running}</div></div>
+    <div class="summary-card"><div class="label">草稿</div><div class="value" style="color:#a1a1aa">${draft}</div></div>
+    <div class="summary-card"><div class="label">已暂停</div><div class="value" style="color:#fde047">${paused}</div></div>
+  `;
+}
+
+function renderStatsTable(stats) {
+  if (!stats || stats.length === 0) {
+    return '<div style="padding:16px;color:#71717a;font-size:13px;">暂无事件数据（实验运行后将自动收集）</div>';
+  }
+  const control = stats.find(s => s.variant === 'control');
+  const treatment = stats.find(s => s.variant === 'treatment');
+
+  const rows = [
+    { label: '调用次数', key: 'calls', format: v => v || 0, higherBetter: null },
+    { label: '格式正确率', key: 'format_valid_rate', format: formatPct, higherBetter: true },
+    { label: '平均耗时', key: 'avg_duration_ms', format: formatMs, higherBetter: false },
+    { label: '平均总 Token', key: 'avg_total_tokens', format: v => v ? v.toFixed(0) : '-', higherBetter: false },
+    { label: '平均成本', key: 'avg_cost', format: v => v ? '¥' + v.toFixed(4) : '-', higherBetter: false },
+  ];
+
+  let html = '<table class="stats-table"><thead><tr><th>指标</th>';
+  if (control) html += '<th>control（旧版）</th>';
+  if (treatment) html += '<th>treatment（优化版）</th>';
+  if (control && treatment) html += '<th>差异</th>';
+  html += '</tr></thead><tbody>';
+
+  rows.forEach(row => {
+    const cVal = control ? control[row.key] : null;
+    const tVal = treatment ? treatment[row.key] : null;
+    let diff = '-';
+    let diffClass = 'metric-neutral';
+    if (cVal != null && tVal != null && row.higherBetter !== null) {
+      const delta = tVal - cVal;
+      if (row.key === 'format_valid_rate') {
+        diff = (delta >= 0 ? '+' : '') + (delta * 100).toFixed(1) + '%';
+      } else if (row.key === 'avg_duration_ms') {
+        diff = (delta >= 0 ? '+' : '') + delta.toFixed(0) + 'ms';
+      } else {
+        diff = (delta >= 0 ? '+' : '') + delta.toFixed(2);
+      }
+      diffClass = compareMetric(cVal, tVal, row.higherBetter);
+    }
+    html += `<tr><td>${row.label}</td>`;
+    if (control) html += `<td>${row.format(cVal)}</td>`;
+    if (treatment) html += `<td class="${row.higherBetter ? compareMetric(cVal, tVal, row.higherBetter) : ''}">${row.format(tVal)}</td>`;
+    if (control && treatment) html += `<td class="${diffClass}">${diff}</td>`;
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  return html;
+}
+
+function renderActions(exp) {
+  let html = '';
+  if (exp.status === 'draft' || exp.status === 'paused') {
+    html += `<button class="primary small" onclick="updateStatus(${exp.id}, 'running')">启动</button>`;
+  }
+  if (exp.status === 'running') {
+    html += `<button class="warning small" onclick="updateStatus(${exp.id}, 'paused')">暂停</button>`;
+    html += `<button class="danger small" onclick="updateStatus(${exp.id}, 'ended')">结束</button>`;
+  }
+  if (exp.status === 'ended') {
+    html += `<button class="small" onclick="updateStatus(${exp.id}, 'draft')">重置为草稿</button>`;
+  }
+  html += `<button class="danger small" onclick="deleteExperiment(${exp.id}, '${exp.name}')">删除</button>`;
+  return html;
+}
+
+async function loadExperiments() {
+  const listEl = document.getElementById('experimentList');
+  listEl.innerHTML = '<div class="loading">加载中...</div>';
+
+  try {
+    const data = await api(API_BASE);
+    const experiments = data.experiments || [];
+    renderSummary(experiments);
+
+    if (experiments.length === 0) {
+      listEl.innerHTML = '<div class="empty-state"><div class="icon">📊</div><div>暂无实验，点击右上角"新建实验"创建</div></div>';
+      return;
+    }
+
+    let html = '';
+    for (const exp of experiments) {
+      let statsHtml = '<div class="loading">加载统计中...</div>';
+      try {
+        const statsData = await api(`${API_BASE}/${exp.id}/stats`);
+        statsHtml = renderStatsTable(statsData.stats);
+      } catch (e) {
+        statsHtml = '<div style="padding:16px;color:#f87171;font-size:13px;">统计加载失败</div>';
+      }
+
+      const variantsText = (exp.variants || []).map(v => `${v.name}(${v.weight}%)`).join(' / ');
+
+      html += `
+        <div class="experiment-card">
+          <div class="experiment-header">
+            <div class="experiment-title">
+              <div class="experiment-name">${exp.name}</div>
+              <div class="experiment-desc">${exp.description || '无描述'}</div>
+            </div>
+            <div class="experiment-meta">
+              ${statusBadge(exp.status)}
+              <span class="badge traffic">流量 ${exp.traffic_pct}%</span>
+              <span class="badge draft">${variantsText}</span>
+            </div>
+          </div>
+          <div class="experiment-body">${statsHtml}</div>
+          <div class="experiment-actions">${renderActions(exp)}</div>
+        </div>
+      `;
+    }
+    listEl.innerHTML = html;
+  } catch (e) {
+    listEl.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><div>加载失败：${e.message}</div></div>`;
+  }
+}
+
+async function updateStatus(id, status) {
+  try {
+    await api(`${API_BASE}/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    });
+    showToast(`实验已${status === 'running' ? '启动' : status === 'paused' ? '暂停' : status === 'ended' ? '结束' : '更新'}`);
+    loadExperiments();
+  } catch (e) {}
+}
+
+async function deleteExperiment(id, name) {
+  if (!confirm(`确定删除实验 "${name}"？此操作不可逆，将同时删除所有统计数据。`)) return;
+  try {
+    await api(`${API_BASE}/${id}`, { method: 'DELETE' });
+    showToast('实验已删除');
+    loadExperiments();
+  } catch (e) {}
+}
+
+function toggleCreatePanel() {
+  document.getElementById('createPanel').classList.toggle('open');
+}
+
+async function createExperiment() {
+  const name = document.getElementById('newName').value.trim();
+  const desc = document.getElementById('newDesc').value.trim();
+  const traffic = parseInt(document.getElementById('newTraffic').value);
+  const variantItems = document.querySelectorAll('#variantsEditor .variant-item');
+  const variants = [];
+  variantItems.forEach(item => {
+    const inputs = item.querySelectorAll('input');
+    const vName = inputs[0].value.trim();
+    const vWeight = parseInt(inputs[1].value);
+    if (vName && vWeight > 0) variants.push({ name: vName, weight: vWeight });
+  });
+
+  if (!name) { showToast('请输入实验名称', 'error'); return; }
+  if (variants.length < 2) { showToast('至少需要2个变体', 'error'); return; }
+
+  try {
+    await api(API_BASE, {
+      method: 'POST',
+      body: JSON.stringify({ name, description: desc, traffic_pct: traffic, variants })
+    });
+    showToast('实验创建成功');
+    toggleCreatePanel();
+    document.getElementById('newName').value = '';
+    document.getElementById('newDesc').value = '';
+    loadExperiments();
+  } catch (e) {}
+}
+
+document.getElementById('autoRefresh').addEventListener('change', (e) => {
+  if (e.target.checked) {
+    autoRefreshTimer = setInterval(loadExperiments, 30000);
+  } else {
+    clearInterval(autoRefreshTimer);
+  }
+});
+
+// 初始化
+autoRefreshTimer = setInterval(loadExperiments, 30000);
+loadExperiments();
+</script>
+</body>
+</html>
